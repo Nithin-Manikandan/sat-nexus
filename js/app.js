@@ -144,6 +144,7 @@ async function signIn() {
 const PAGE_TITLES = {
   dashboard:   'Dashboard',
   practice:    'Practice Tests',
+  fulltest:    'Full Practice Tests',
   flashcards:  'Flashcards',
   resources:   'Resource Hub',
   videos:      'Video Library',
@@ -171,6 +172,7 @@ function navigateTo(page) {
   if (page === 'leaderboard') renderLeaderboard();
   if (page === 'roadmap')     initRoadmapDefaults();
   if (page === 'flashcards')  renderCard();
+  if (page === 'fulltest')    initFullTestPage();
 }
 
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -195,7 +197,7 @@ function showToast(message, type = 'info', duration = 3000) {
 /* ── Dashboard ───────────────────────────────────────────────── */
 function initDashboard() {
   updateSidebarUser();
-  if (isGuest() || !USER.currentScore) {
+  if (!USER.questionsAnswered || USER.questionsAnswered === 0) {
     renderEmptyDashboard();
   } else {
     renderDashboard();
@@ -215,6 +217,9 @@ function updateSidebarUser() {
 }
 
 function renderEmptyDashboard() {
+  const chartsRow = document.getElementById('dashChartsRow');
+  if (chartsRow) chartsRow.style.display = 'none';
+
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const name = USER?.name && !isGuest() ? `, ${USER.name}` : '';
@@ -273,6 +278,9 @@ function renderEmptyDashboard() {
 }
 
 function renderDashboard() {
+  const chartsRow = document.getElementById('dashChartsRow');
+  if (chartsRow) chartsRow.style.display = '';
+
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const name = USER?.name ? `, ${USER.name}` : '';
@@ -1063,20 +1071,371 @@ document.getElementById('resourceFilters')?.addEventListener('click', e => {
   renderResources(chip.dataset.filter, chip.dataset.source || null);
 });
 
+/* ── Full Practice Test Engine ──────────────────────────────── */
+const FT_MODULES = [
+  { label: 'Module 1 — Reading & Writing', section: 'reading_writing', count: 27, minutes: 32, difficulty: 'easy' },
+  { label: 'Module 2 — Reading & Writing', section: 'reading_writing', count: 27, minutes: 32, difficulty: 'medium' },
+  { label: 'Module 1 — Math',             section: 'math',            count: 22, minutes: 35, difficulty: 'easy' },
+  { label: 'Module 2 — Math',             section: 'math',            count: 22, minutes: 35, difficulty: 'hard'  }
+];
+
+let ftState = null;
+let ftTimerInterval = null;
+
+function initFullTestPage() {
+  document.getElementById('fulltestHub').style.display = '';
+  document.getElementById('fulltestActive').style.display = 'none';
+  document.getElementById('fulltestReport').style.display = 'none';
+  renderFTHistory();
+}
+
+function renderFTHistory() {
+  const el = document.getElementById('fulltestHistory');
+  if (!el) return;
+  const results = JSON.parse(localStorage.getItem('sat_nexus_fulltests') || '[]');
+  if (!results.length) {
+    el.innerHTML = `<div style="color:var(--text-muted);font-size:.85rem;padding:16px 0">No completed tests yet. Start your first one above!</div>`;
+    return;
+  }
+  el.innerHTML = results.slice().reverse().slice(0, 5).map(r => `
+    <div style="display:flex;align-items:center;gap:14px;padding:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;margin-bottom:8px">
+      <div style="flex:1">
+        <div style="font-size:.87rem;font-weight:600;margin-bottom:2px">Practice Test ${r.testNum}</div>
+        <div style="font-size:.72rem;color:var(--text-muted)">${r.date}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${r.total}</div>
+        <div style="font-size:.7rem;color:var(--text-muted)">R&W: ${r.rw} · Math: ${r.math}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function startFullTest(testNum) {
+  // Build question bank for each module — use a deterministic seed based on testNum
+  const allRW   = SAT_QUESTIONS.filter(q => q.section === 'reading_writing');
+  const allMath = SAT_QUESTIONS.filter(q => q.section === 'math');
+
+  const pick = (arr, diff, n, offset) => {
+    const pool = diff === 'easy'
+      ? arr.filter(q => q.difficulty === 'easy')
+      : diff === 'medium'
+        ? arr.filter(q => q.difficulty !== 'hard')
+        : arr;
+    // Deterministic shuffle using testNum + offset
+    const shuffled = pool.slice().sort((a, b) => {
+      const ha = simpleHash(a.id + testNum + offset);
+      const hb = simpleHash(b.id + testNum + offset);
+      return ha - hb;
+    });
+    return shuffled.slice(0, Math.min(n, shuffled.length));
+  };
+
+  const modules = [
+    { ...FT_MODULES[0], questions: pick(allRW,   'easy',   27, 0) },
+    { ...FT_MODULES[1], questions: pick(allRW,   'medium', 27, 1) },
+    { ...FT_MODULES[2], questions: pick(allMath, 'easy',   22, 2) },
+    { ...FT_MODULES[3], questions: pick(allMath, 'hard',   22, 3) }
+  ];
+
+  ftState = {
+    testNum,
+    modules,
+    moduleIdx: 0,
+    questionIdx: 0,
+    answers: modules.map(m => new Array(m.questions.length).fill(null)),
+    revealed: modules.map(m => new Array(m.questions.length).fill(false)),
+    flags: modules.map(m => new Array(m.questions.length).fill(false)),
+    timeLeft: modules[0].minutes * 60,
+    paused: false,
+    startTime: Date.now()
+  };
+
+  document.getElementById('fulltestHub').style.display = 'none';
+  document.getElementById('fulltestActive').style.display = '';
+  document.getElementById('fulltestReport').style.display = 'none';
+
+  ftRenderQuestion();
+  ftStartTimer();
+}
+
+function simpleHash(str) {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+function ftStartTimer() {
+  clearInterval(ftTimerInterval);
+  ftTimerInterval = setInterval(() => {
+    if (ftState.paused) return;
+    ftState.timeLeft--;
+    const el = document.getElementById('ftTimer');
+    if (!el) return;
+    const m = Math.floor(ftState.timeLeft / 60);
+    const s = ftState.timeLeft % 60;
+    el.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if (ftState.timeLeft <= 60) el.style.color = 'var(--rose)';
+    else if (ftState.timeLeft <= 300) el.style.color = 'var(--amber)';
+    else el.style.color = 'var(--emerald)';
+    if (ftState.timeLeft <= 0) ftTimeUp();
+  }, 1000);
+}
+
+function ftTimeUp() {
+  clearInterval(ftTimerInterval);
+  showToast("Time's up for this module!", 'info', 3000);
+  setTimeout(() => ftAdvanceModule(), 1500);
+}
+
+function pauseFullTest() {
+  if (!ftState) return;
+  ftState.paused = !ftState.paused;
+  const btn = document.getElementById('ftPauseBtn');
+  if (btn) btn.textContent = ftState.paused ? '▶ Resume' : '⏸ Pause';
+  if (!ftState.paused) ftStartTimer();
+}
+
+function quitFullTest() {
+  if (!confirm('Quit this test? Your progress will be lost.')) return;
+  clearInterval(ftTimerInterval);
+  ftState = null;
+  initFullTestPage();
+}
+
+function ftRenderQuestion() {
+  if (!ftState) return;
+  const mod = ftState.modules[ftState.moduleIdx];
+  const q   = mod.questions[ftState.questionIdx];
+  if (!q) return;
+
+  const total = mod.questions.length;
+  const idx   = ftState.questionIdx;
+  const pct   = ((idx) / total) * 100;
+
+  document.getElementById('ftModuleLabel').textContent    = mod.label;
+  document.getElementById('ftProgressLabel').textContent  = `Question ${idx + 1} of ${total}`;
+  document.getElementById('ftProgressBar').style.width    = pct + '%';
+
+  document.getElementById('ftQuestionMeta').innerHTML = `
+    <span class="badge badge-${mod.section === 'math' ? 'indigo' : 'violet'}">${mod.section === 'math' ? 'Math' : 'R&W'}</span>
+    <span class="badge badge-${mod.section === 'math' ? 'cyan' : 'indigo'}">${q.topic}</span>
+    <span class="difficulty-${q.difficulty}">${q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</span>
+  `;
+
+  const passageEl = document.getElementById('ftPassage');
+  if (q.passage) { passageEl.textContent = q.passage; passageEl.style.display = 'block'; }
+  else { passageEl.style.display = 'none'; }
+
+  document.getElementById('ftQuestionText').textContent = q.text;
+
+  const revealed = ftState.revealed[ftState.moduleIdx][idx];
+  const selected = ftState.answers[ftState.moduleIdx][idx];
+
+  document.getElementById('ftAnswerChoices').innerHTML = q.choices.map((choice, i) => {
+    const letter = ['A','B','C','D'][i];
+    let cls = 'answer-choice';
+    if (revealed) {
+      if (letter === q.answer)  cls += ' correct';
+      else if (letter === selected) cls += ' incorrect';
+    } else if (letter === selected) cls += ' selected';
+    return `<div class="${cls}" onclick="ftSelectAnswer('${letter}')">
+      <div class="choice-letter">${letter}</div>
+      <div class="choice-text">${choice.substring(3)}</div>
+    </div>`;
+  }).join('');
+
+  const expCard = document.getElementById('ftExplanationCard');
+  if (revealed) {
+    expCard.classList.remove('hidden');
+    document.getElementById('ftExplanationText').textContent = q.explanation;
+  } else {
+    expCard.classList.add('hidden');
+  }
+
+  document.getElementById('ftPrevBtn').disabled = idx === 0 && ftState.moduleIdx === 0;
+  document.getElementById('ftFlagBtn').style.color = ftState.flags[ftState.moduleIdx][idx] ? '#f59e0b' : '';
+
+  const isLastQ  = idx === total - 1;
+  const isLastMod = ftState.moduleIdx === ftState.modules.length - 1;
+  const nextBtn  = document.getElementById('ftNextBtn');
+  if (isLastQ && isLastMod) nextBtn.textContent = 'Finish Test ✓';
+  else if (isLastQ) nextBtn.textContent = 'Next Module →';
+  else nextBtn.textContent = 'Next →';
+}
+
+function ftSelectAnswer(letter) {
+  if (!ftState) return;
+  const mIdx = ftState.moduleIdx;
+  const qIdx = ftState.questionIdx;
+  if (ftState.revealed[mIdx][qIdx]) return;
+  ftState.answers[mIdx][qIdx] = letter;
+  ftState.revealed[mIdx][qIdx] = true;
+  ftRenderQuestion();
+}
+
+function ftPrevQ() {
+  if (!ftState) return;
+  if (ftState.questionIdx > 0) {
+    ftState.questionIdx--;
+    ftRenderQuestion();
+  }
+}
+
+function ftNextQ() {
+  if (!ftState) return;
+  const mod   = ftState.modules[ftState.moduleIdx];
+  const isLast = ftState.questionIdx === mod.questions.length - 1;
+
+  if (isLast) {
+    ftAdvanceModule();
+  } else {
+    ftState.questionIdx++;
+    ftRenderQuestion();
+  }
+}
+
+function ftFlagQ() {
+  if (!ftState) return;
+  const m = ftState.moduleIdx;
+  const q = ftState.questionIdx;
+  ftState.flags[m][q] = !ftState.flags[m][q];
+  ftRenderQuestion();
+}
+
+function ftAdvanceModule() {
+  clearInterval(ftTimerInterval);
+  if (!ftState) return;
+
+  if (ftState.moduleIdx < ftState.modules.length - 1) {
+    ftState.moduleIdx++;
+    ftState.questionIdx = 0;
+    ftState.timeLeft = ftState.modules[ftState.moduleIdx].minutes * 60;
+    const timerEl = document.getElementById('ftTimer');
+    if (timerEl) timerEl.style.color = 'var(--emerald)';
+    ftRenderQuestion();
+    ftStartTimer();
+    showToast(`Starting ${ftState.modules[ftState.moduleIdx].label}`, 'info', 3000);
+  } else {
+    ftFinishTest();
+  }
+}
+
+function ftFinishTest() {
+  clearInterval(ftTimerInterval);
+  if (!ftState) return;
+
+  // Compute scores per module
+  const modScores = ftState.modules.map((mod, mIdx) => {
+    let correct = 0;
+    mod.questions.forEach((q, qIdx) => {
+      if (ftState.answers[mIdx][qIdx] === q.answer) correct++;
+    });
+    return { correct, total: mod.questions.length, pct: Math.round(correct / mod.questions.length * 100) };
+  });
+
+  // R&W score (modules 0 + 1): scale 200-800
+  const rwCorrect = modScores[0].correct + modScores[1].correct;
+  const rwTotal   = modScores[0].total   + modScores[1].total;
+  const rwPct     = rwCorrect / rwTotal;
+  const rwScore   = Math.round(200 + rwPct * 600 / 10) * 10;
+
+  // Math score (modules 2 + 3): scale 200-800
+  const mCorrect  = modScores[2].correct + modScores[3].correct;
+  const mTotal    = modScores[2].total   + modScores[3].total;
+  const mPct      = mCorrect / mTotal;
+  const mScore    = Math.round(200 + mPct * 600 / 10) * 10;
+
+  const totalScore = rwScore + mScore;
+
+  // Save result
+  const result = {
+    testNum: ftState.testNum,
+    date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    total: totalScore, rw: rwScore, math: mScore
+  };
+  const results = JSON.parse(localStorage.getItem('sat_nexus_fulltests') || '[]');
+  results.push(result);
+  localStorage.setItem('sat_nexus_fulltests', JSON.stringify(results));
+
+  // Update user stats
+  if (USER) {
+    USER.testsCompleted = (USER.testsCompleted || 0) + 1;
+    USER.currentScore   = totalScore;
+    saveUser(USER);
+    updateSidebarUser();
+  }
+
+  // Render report
+  document.getElementById('fulltestActive').style.display  = 'none';
+  document.getElementById('fulltestReport').style.display  = '';
+
+  document.getElementById('ftTotalScore').textContent = totalScore;
+  document.getElementById('ftRWScore').textContent    = rwScore;
+  document.getElementById('ftMathScore').textContent  = mScore;
+
+  document.getElementById('ftModuleBreakdown').innerHTML = ftState.modules.map((mod, mIdx) => {
+    const s = modScores[mIdx];
+    const color = s.pct >= 80 ? 'var(--emerald)' : s.pct >= 60 ? 'var(--amber)' : 'var(--rose)';
+    return `<div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:16px">
+      <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">${mod.label}</div>
+      <div style="font-size:1.8rem;font-weight:800;color:${color};margin-bottom:4px">${s.pct}%</div>
+      <div style="font-size:.78rem;color:var(--text-muted)">${s.correct} / ${s.total} correct</div>
+      <div style="margin-top:8px;background:rgba(255,255,255,0.06);border-radius:6px;height:6px;overflow:hidden">
+        <div style="height:100%;background:${color};width:${s.pct}%;border-radius:6px;transition:width 1s ease"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Wrong answers
+  const wrong = [];
+  ftState.modules.forEach((mod, mIdx) => {
+    mod.questions.forEach((q, qIdx) => {
+      if (ftState.answers[mIdx][qIdx] !== q.answer) {
+        wrong.push({ q, chosen: ftState.answers[mIdx][qIdx], mod: mod.label });
+      }
+    });
+  });
+
+  document.getElementById('ftWrongCount').textContent = `${wrong.length} missed`;
+  document.getElementById('ftWrongList').innerHTML = wrong.slice(0, 10).map(w => `
+    <div style="background:rgba(251,113,133,0.05);border:1px solid rgba(251,113,133,0.15);border-radius:12px;padding:14px">
+      <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:6px">${w.mod}</div>
+      <div style="font-size:.88rem;font-weight:500;margin-bottom:10px;line-height:1.5">${w.q.text.slice(0, 120)}${w.q.text.length > 120 ? '…' : ''}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <span style="background:rgba(251,113,133,0.15);color:var(--rose);padding:3px 10px;border-radius:6px;font-size:.78rem">Your answer: ${w.chosen || 'skipped'}</span>
+        <span style="background:rgba(16,185,129,0.15);color:var(--emerald);padding:3px 10px;border-radius:6px;font-size:.78rem">Correct: ${w.q.answer}</span>
+      </div>
+      <div style="font-size:.78rem;color:var(--text-muted);line-height:1.5">${w.q.explanation}</div>
+    </div>
+  `).join('');
+
+  if (wrong.length > 10) {
+    document.getElementById('ftWrongList').innerHTML += `<div style="font-size:.8rem;color:var(--text-muted);text-align:center;padding:8px">And ${wrong.length - 10} more — retake the test to review all.</div>`;
+  }
+}
+
 /* ── Videos ──────────────────────────────────────────────────── */
 function renderVideos(filter) {
   const grid = document.getElementById('videoGrid');
   if (!grid) return;
-  const filtered = filter === 'all' ? SAT_VIDEOS : SAT_VIDEOS.filter(v => v.section === filter || filter === 'strategy');
+  const filtered = filter === 'all'
+    ? SAT_VIDEOS
+    : filter === 'strategy'
+      ? SAT_VIDEOS.filter(v => v.section === 'all')
+      : SAT_VIDEOS.filter(v => v.section === filter);
   const colors   = { K:'#10b981', S:'#818cf8', P:'#a78bfa', B:'#f472b6', D:'#22d3ee' };
 
   grid.innerHTML = filtered.map(v => `
     <div class="video-card" onclick="openVideo('${v.id}')">
-      <div class="video-thumb" style="background:linear-gradient(135deg,rgba(${v.section==='math'?'129,140,248':'167,139,250'},0.15),rgba(34,211,238,0.08))">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--text-muted);padding:16px;text-align:center">
-          <svg width="36" height="36" viewBox="0 0 36 36" fill="none"><circle cx="18" cy="18" r="16" fill="rgba(255,255,255,0.05)" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/><path d="M14 11l12 7-12 7V11z" fill="currentColor" opacity="0.5"/></svg>
-          <span style="font-size:.7rem;line-height:1.4">${v.title.slice(0,50)}${v.title.length>50?'…':''}</span>
-        </div>
+      <div class="video-thumb" style="position:relative;overflow:hidden;background:#0a0a1a">
+        <img
+          src="https://img.youtube.com/vi/${v.videoId}/maxresdefault.jpg"
+          onerror="this.src='https://img.youtube.com/vi/${v.videoId}/hqdefault.jpg';this.onerror=null"
+          alt="${v.title.replace(/"/g,'&quot;')}"
+          style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .3s ease"
+          class="video-thumb-img"
+        />
         <div class="video-play-overlay"><div class="play-btn-large"><svg width="20" height="20" viewBox="0 0 20 20" fill="white"><path d="M7 5l10 5-10 5V5z"/></svg></div></div>
         <div class="video-duration">${v.duration}</div>
       </div>

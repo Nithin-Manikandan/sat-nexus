@@ -5925,6 +5925,446 @@ const SAT_VIDEOS = [
     tags: ['advanced algebra', 'functions', 'khan academy', 'official'],
     timestamps: ['0:00 Functions overview', '5:00 Function composition', '10:00 Nonlinear systems', '16:00 Polynomial operations', '20:00 Rational expressions'],
     rating: 4.8
+  },
+  {
+    id: 'V011', title: 'Digital SAT Algebra: Linear Equations & Inequalities (Full Lesson)',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'oVjDGBrHxUg',
+    duration: '34:12', views: '310K',
+    section: 'math', topic: 'Algebra', difficulty: 'medium',
+    description: 'Everything you need to know about linear equations and inequalities on the Digital SAT. Covers one-variable equations, systems of equations, graphing on the number line, and real-world word problems. Includes Desmos shortcuts for checking answers quickly.',
+    tags: ['algebra', 'linear equations', 'inequalities', 'systems'],
+    timestamps: ['0:00 Intro', '4:00 One-variable linear equations', '11:00 Systems of equations', '20:00 Linear inequalities', '28:00 Word problems'],
+    rating: 4.8
+  },
+  {
+    id: 'V012', title: 'SAT Math: Mastering Quadratics — Factoring, Quadratic Formula & Vertex',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: '2ZzuZvz33X0',
+    duration: '28:44', views: '480K',
+    section: 'math', topic: 'Advanced Math', difficulty: 'medium',
+    description: 'Comprehensive guide to all quadratic methods tested on the Digital SAT: factoring (GCF, difference of squares, trinomials), quadratic formula, completing the square, vertex form, and discriminant analysis. Includes the 5 most common quadratic question types.',
+    tags: ['quadratics', 'factoring', 'quadratic formula', 'vertex'],
+    timestamps: ['0:00 Factoring methods', '8:00 Quadratic formula', '14:00 Vertex form', '20:00 Discriminant', '24:00 Practice problems'],
+    rating: 4.9
+  },
+  {
+    id: 'V013', title: 'Digital SAT: Exponential Growth, Decay & Compound Interest (All Types)',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'sTsop8RdLYM',
+    duration: '26:30', views: '198K',
+    section: 'math', topic: 'Advanced Math', difficulty: 'hard',
+    description: 'Master exponential models that appear on every Digital SAT. Covers the difference between exponential growth/decay, half-life problems, compound interest (annual, monthly, continuous), and how to read exponential equations written in multiple equivalent forms.',
+    tags: ['exponential', 'growth', 'decay', 'compound interest'],
+    timestamps: ['0:00 Exponential basics', '6:00 Growth vs decay', '12:00 Half-life', '18:00 Compound interest', '22:00 Equivalent forms'],
+    rating: 4.8
+  },
+  {
+    id: 'V014', title: 'SAT Math: Functions — Notation, Composition, Transformations & Inverses',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'YbdkHgI3GDM',
+    duration: '38:55', views: '267K',
+    section: 'math', topic: 'Advanced Math', difficulty: 'hard',
+    description: 'Deep dive into function questions on the Digital SAT. Covers f(x) notation, evaluating and interpreting functions, function composition (f(g(x))), transformations (shifts and reflections), inverse functions, and reading graphs of functions. A must-watch for 700+ math.',
+    tags: ['functions', 'composition', 'transformations', 'inverse'],
+    timestamps: ['0:00 Function notation', '7:00 Evaluating functions', '14:00 Function composition', '22:00 Transformations', '30:00 Inverses'],
+    rating: 4.9
+  },
+  {
+    id: 'V015', title: 'SAT Advanced Algebra: Polynomials, Rational Expressions & Radical Equations',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: 'yqagAW-JIfM',
+    duration: '31:22', views: '215K',
+    section: 'math', topic: 'Advanced Math', difficulty: 'hard',
+    description: 'Advanced algebra for high-scorers: polynomial long division, synthetic division, rational expressions (adding, subtracting, multiplying, dividing), solving radical equations, and identifying extraneous solutions. Covers the hardest question types in the calculator module.',
+    tags: ['polynomials', 'rational expressions', 'radicals', 'advanced algebra'],
+    timestamps: ['0:00 Polynomials', '8:00 Rational expressions', '16:00 Radical equations', '24:00 Extraneous solutions', '28:00 Practice set'],
+    rating: 4.8
+  },
+  {
+    id: 'V016', title: 'Using Desmos on the Digital SAT — Every Calculator Trick You Need',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'jFCz6pMwF-o',
+    duration: '42:18', views: '445K',
+    section: 'math', topic: 'Strategy', difficulty: 'medium',
+    description: 'The most comprehensive Desmos guide for the Digital SAT. Covers solving equations graphically, systems of equations, inequalities, finding vertex/roots/intercepts, regression, parametric equations, and time-saving shortcuts. Using Desmos strategically can add 40-60 points to your math score.',
+    tags: ['desmos', 'calculator', 'graphing', 'strategy', 'math tools'],
+    timestamps: ['0:00 Desmos basics', '8:00 Solving equations graphically', '16:00 Systems & inequalities', '24:00 Finding key features', '34:00 Advanced tricks'],
+    rating: 5.0
+  },
+  {
+    id: 'V017', title: 'SAT Geometry Complete Guide — Triangles, Circles, Coordinate Geometry',
+    channel: 'SAT Math Pro', channelAvatar: 'M',
+    videoId: 'zkAHD2quHvk',
+    duration: '47:05', views: '334K',
+    section: 'math', topic: 'Geometry', difficulty: 'medium',
+    description: 'Everything geometry on the Digital SAT: special right triangles (30-60-90, 45-45-90), Pythagorean theorem, similar triangles, circle theorems (arc length, sector area, inscribed angles), coordinate geometry (slope, midpoint, distance), and 3D shapes (volume formulas).',
+    tags: ['geometry', 'triangles', 'circles', 'coordinate geometry'],
+    timestamps: ['0:00 Triangle basics', '10:00 Special right triangles', '18:00 Circle theorems', '28:00 Coordinate geometry', '38:00 3D geometry'],
+    rating: 4.8
+  },
+  {
+    id: 'V018', title: 'SAT Trigonometry from Scratch — SOH-CAH-TOA, Unit Circle & Radians',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: 'PUB0TaZ7bhA',
+    duration: '22:40', views: '289K',
+    section: 'math', topic: 'Geometry', difficulty: 'hard',
+    description: 'Complete SAT trig lesson: SOH-CAH-TOA from the basics up, using the calculator for trig values, the complementary angle identity (sin θ = cos(90°-θ)), the Pythagorean identity, and how trig shows up on every Digital SAT (usually 2-4 questions per test).',
+    tags: ['trigonometry', 'SOH-CAH-TOA', 'unit circle', 'radians'],
+    timestamps: ['0:00 Why trig matters on SAT', '4:00 SOH-CAH-TOA', '10:00 Complementary identity', '15:00 Pythagorean identity', '19:00 Practice'],
+    rating: 4.7
+  },
+  {
+    id: 'V019', title: 'SAT Data Analysis: Tables, Scatterplots, Mean/Median & Probability',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'BNaUK1Fxn3g',
+    duration: '36:48', views: '253K',
+    section: 'math', topic: 'Data Analysis', difficulty: 'medium',
+    description: 'Full walkthrough of data analysis questions on the Digital SAT: reading two-way frequency tables, interpreting scatterplots (line of best fit, residuals), calculating mean/median/mode from tables, probability from two-way tables, and margin of error in studies.',
+    tags: ['data analysis', 'statistics', 'probability', 'scatterplots'],
+    timestamps: ['0:00 Two-way tables', '9:00 Scatterplots', '17:00 Mean/median/mode', '25:00 Probability from tables', '31:00 Margin of error'],
+    rating: 4.8
+  },
+  {
+    id: 'V020', title: 'SAT Math: Ratios, Proportions, Percentages & Unit Conversions',
+    channel: 'SAT Math Pro', channelAvatar: 'M',
+    videoId: 'kP3aKTQZxqg',
+    duration: '24:15', views: '312K',
+    section: 'math', topic: 'Algebra', difficulty: 'easy',
+    description: 'Master the foundational SAT math topics that appear on every test: setting up ratios and proportions, percent increase/decrease, percent of a percent, part-to-whole ratios, unit conversions with dimensional analysis, and mixture problems.',
+    tags: ['ratios', 'proportions', 'percentages', 'unit conversion'],
+    timestamps: ['0:00 Ratios and proportions', '6:00 Percent problems', '12:00 Percent of a percent', '17:00 Unit conversions', '21:00 Mixture problems'],
+    rating: 4.7
+  },
+  {
+    id: 'V021', title: 'Digital SAT Math Word Problems — Setting Up Equations from Context',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'oVjDGBrHxUg',
+    duration: '29:00', views: '187K',
+    section: 'math', topic: 'Algebra', difficulty: 'medium',
+    description: 'The #1 skill that separates students who score 650 from those who score 750: translating real-world contexts into mathematical equations. This video gives you a step-by-step system for every type of word problem on the Digital SAT, with 15 worked examples.',
+    tags: ['word problems', 'modeling', 'real-world context', 'setup'],
+    timestamps: ['0:00 Framework for word problems', '6:00 Linear models', '12:00 Quadratic models', '18:00 System word problems', '24:00 Exponential context'],
+    rating: 4.8
+  },
+  {
+    id: 'V022', title: 'Digital SAT Grammar: Standard English Conventions — Complete Guide',
+    channel: 'Erica Meltzer SAT', channelAvatar: 'E',
+    videoId: 'qY_Xep6SHCM',
+    duration: '52:30', views: '276K',
+    section: 'reading_writing', topic: 'Standard English Conventions', difficulty: 'medium',
+    description: 'The definitive grammar guide for the Digital SAT. Covers every tested convention: commas (FANBOYS, introductory elements, non-restrictive clauses), semicolons vs colons, apostrophes (possession vs contraction), subject-verb agreement, pronoun agreement, and sentence boundaries (run-ons, fragments).',
+    tags: ['grammar', 'conventions', 'punctuation', 'commas', 'semicolons'],
+    timestamps: ['0:00 Overview of grammar rules', '8:00 Commas (all uses)', '18:00 Semicolons & colons', '26:00 Apostrophes', '34:00 Subject-verb agreement', '42:00 Run-ons & fragments'],
+    rating: 4.9
+  },
+  {
+    id: 'V023', title: 'SAT Punctuation Masterclass — Commas, Semicolons, Colons, Dashes',
+    channel: 'Erica Meltzer SAT', channelAvatar: 'E',
+    videoId: 'jFCz6pMwF-o',
+    duration: '38:20', views: '198K',
+    section: 'reading_writing', topic: 'Standard English Conventions', difficulty: 'medium',
+    description: 'A laser-focused lesson on punctuation — the single most tested grammar category on the Digital SAT. Includes the "independent clause" test for semicolons, the colon rule (only what follows must be an explanation), em dash usage, and the exact comma rules tested on every exam.',
+    tags: ['punctuation', 'commas', 'semicolons', 'colons', 'dashes'],
+    timestamps: ['0:00 Independent clause test', '8:00 Comma rules', '18:00 Semicolons', '24:00 Colons', '30:00 Dashes'],
+    rating: 4.9
+  },
+  {
+    id: 'V024', title: 'SAT Grammar: Subject-Verb Agreement, Modifiers & Parallel Structure',
+    channel: 'PrepScholar', channelAvatar: 'D',
+    videoId: 'tIlTZwt5VQA',
+    duration: '33:10', views: '165K',
+    section: 'reading_writing', topic: 'Standard English Conventions', difficulty: 'medium',
+    description: 'The tricky grammar rules that trip up even strong students: subject-verb agreement with interrupting phrases, misplaced/dangling modifiers, parallel structure in lists and comparisons, and pronoun case (who vs whom, I vs me). Each rule includes 5 Digital SAT–style practice questions.',
+    tags: ['subject-verb agreement', 'modifiers', 'parallel structure', 'grammar'],
+    timestamps: ['0:00 Subject-verb agreement', '10:00 Tricky cases', '16:00 Modifiers', '22:00 Parallel structure', '28:00 Pronoun case'],
+    rating: 4.7
+  },
+  {
+    id: 'V025', title: 'Digital SAT Reading: Craft & Structure — Tone, Purpose & Text Analysis',
+    channel: 'PrepScholar', channelAvatar: 'D',
+    videoId: 'EEf70TIe-FA',
+    duration: '41:55', views: '142K',
+    section: 'reading_writing', topic: 'Craft & Structure', difficulty: 'hard',
+    description: "Craft & Structure questions test your ability to analyze HOW and WHY authors write. Covers: author's purpose, tone and word choice, text structure (how paragraphs relate), point of view, and the effect of specific choices. These are the hardest R&W questions and require careful technique.",
+    tags: ['craft and structure', "author's purpose", 'tone', 'text analysis'],
+    timestamps: ['0:00 What is craft & structure?', "6:00 Author's purpose", '12:00 Tone & word choice', '20:00 Text structure', '30:00 Point of view', '37:00 Practice'],
+    rating: 4.8
+  },
+  {
+    id: 'V026', title: 'SAT Vocabulary-in-Context: Master Every Word Question Type',
+    channel: 'PrepScholar', channelAvatar: 'D',
+    videoId: 'gqoXJPNftAc',
+    duration: '27:40', views: '233K',
+    section: 'reading_writing', topic: 'Craft & Structure', difficulty: 'medium',
+    description: "Vocabulary-in-context questions are on EVERY Digital SAT. This video teaches the four-step process: (1) find the key sentence, (2) predict a synonym from context, (3) eliminate choices that use the word's common meaning, (4) pick the word that fits the exact context. Includes 20 practice words.",
+    tags: ['vocabulary', 'words in context', 'craft & structure', 'strategy'],
+    timestamps: ['0:00 How these questions work', '5:00 Four-step method', '11:00 Common traps', '17:00 Practice set', '24:00 Review'],
+    rating: 4.8
+  },
+  {
+    id: 'V027', title: 'SAT Reading: Command of Evidence — Textual & Quantitative',
+    channel: 'Erica Meltzer SAT', channelAvatar: 'E',
+    videoId: 'OKxQxpJULH8',
+    duration: '35:25', views: '188K',
+    section: 'reading_writing', topic: 'Information & Ideas', difficulty: 'hard',
+    description: 'Command of Evidence questions require finding the specific line(s) that prove a claim. Digital SAT has both textual and quantitative evidence. Learn to match evidence precisely, avoid paraphrase traps, and handle the new chart-plus-text format where you must cite both a graph value and a textual claim.',
+    tags: ['command of evidence', 'reading', 'textual evidence', 'quantitative'],
+    timestamps: ['0:00 Evidence question types', '7:00 Textual evidence method', '14:00 Common wrong answers', '20:00 Quantitative evidence', '28:00 Chart + text format'],
+    rating: 4.9
+  },
+  {
+    id: 'V028', title: 'Digital SAT: Central Ideas, Main Purpose & Detail Questions Decoded',
+    channel: 'PrepScholar', channelAvatar: 'D',
+    videoId: 'YYm9VBnozPk',
+    duration: '29:18', views: '156K',
+    section: 'reading_writing', topic: 'Information & Ideas', difficulty: 'medium',
+    description: 'Information & Ideas questions make up roughly 30% of the R&W section. Learn to quickly identify the central idea of a passage (even complex academic texts), answer detail questions without reading the whole passage, and distinguish between what is stated vs implied.',
+    tags: ['central idea', 'main purpose', 'detail questions', 'reading'],
+    timestamps: ['0:00 Central idea questions', '8:00 Main purpose questions', '14:00 Detail questions', '20:00 Inferences', '25:00 Practice'],
+    rating: 4.7
+  },
+  {
+    id: 'V029', title: 'SAT Rhetorical Synthesis: How to Add, Delete, Combine & Transition',
+    channel: 'Erica Meltzer SAT', channelAvatar: 'E',
+    videoId: 'SMJwEYmXcSU',
+    duration: '44:10', views: '203K',
+    section: 'reading_writing', topic: 'Expression of Ideas', difficulty: 'hard',
+    description: 'Expression of Ideas questions test editing skills: adding or deleting sentences (does it support the purpose?), combining sentences (avoid redundancy), transitions (which word fits the logical relationship?), and focusing the argument. Includes every transition category tested on the Digital SAT.',
+    tags: ['rhetorical synthesis', 'transitions', 'expression of ideas', 'editing'],
+    timestamps: ['0:00 Add/delete sentences', '10:00 Transition words', '20:00 Combining ideas', '30:00 Focus questions', '38:00 Practice'],
+    rating: 4.9
+  },
+  {
+    id: 'V030', title: 'Digital SAT Transitions Masterclass — Every Type Tested and How to Crack Them',
+    channel: 'PrepScholar', channelAvatar: 'D',
+    videoId: 'eJ-mfsqyK4w',
+    duration: '24:55', views: '127K',
+    section: 'reading_writing', topic: 'Expression of Ideas', difficulty: 'medium',
+    description: 'Transition questions appear on every Digital SAT — usually 3-4 per test. This video categorizes all transition types (contrast, addition, cause-effect, illustration, summary), teaches you to identify the logical relationship between sentences, and gives you a keyword list so you can eliminate wrong answers instantly.',
+    tags: ['transitions', 'expression of ideas', 'logical connectors', 'strategy'],
+    timestamps: ['0:00 Why transitions matter', '4:00 Contrast transitions', '8:00 Addition transitions', '12:00 Cause-effect', '16:00 Illustration', '20:00 Practice'],
+    rating: 4.8
+  },
+  {
+    id: 'V031', title: 'Digital SAT: Dual-Text / Cross-Text Questions — Author Relationship Strategy',
+    channel: 'Erica Meltzer SAT', channelAvatar: 'E',
+    videoId: 'TnWG6709flU',
+    duration: '31:45', views: '174K',
+    section: 'reading_writing', topic: 'Information & Ideas', difficulty: 'hard',
+    description: 'Cross-text questions present two short passages and ask how Author 2 would respond to Author 1, or how the texts relate. Master the four relationships (agree/disagree/qualify/nuance), avoid the trap of misidentifying agreement vs qualification, and use a two-column comparison technique.',
+    tags: ['cross-text', 'dual passage', 'author relationship', 'reading'],
+    timestamps: ['0:00 Cross-text format', '6:00 Four relationship types', '14:00 The qualification trap', '20:00 Two-column method', '26:00 Practice'],
+    rating: 4.8
+  },
+  {
+    id: 'V032', title: 'Digital SAT Full Strategy Guide — How the Adaptive Test Actually Works',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: 'kP3aKTQZxqg',
+    duration: '33:22', views: '520K',
+    section: 'all', topic: 'Strategy', difficulty: 'easy',
+    description: "How the Digital SAT's adaptive format actually affects your score — and what to do about it. Covers the two-module structure, how Module 1 determines which Module 2 you get, how adaptive scoring works (a hard question is worth more), and the optimal strategy for each module.",
+    tags: ['digital SAT', 'adaptive format', 'strategy', 'scoring'],
+    timestamps: ['0:00 Adaptive format explained', '8:00 Module 1 strategy', '15:00 Module 2 hard path', '22:00 Scoring mechanics', '28:00 What to do differently'],
+    rating: 4.9
+  },
+  {
+    id: 'V033', title: 'SAT Time Management: Every Second Counts — Pacing Strategies for 1500+',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'BNaUK1Fxn3g',
+    duration: '26:12', views: '298K',
+    section: 'all', topic: 'Strategy', difficulty: 'medium',
+    description: 'The difference between a 1400 and a 1500 is often time management, not knowledge. This video covers: how many seconds per question in each module, the skip-and-come-back system, when to guess vs when to spend more time, and how to check your work effectively in the final 3 minutes.',
+    tags: ['time management', 'pacing', 'strategy', 'test taking'],
+    timestamps: ['0:00 Time per question breakdown', '6:00 Skip and return strategy', '12:00 Guess vs attempt decision', '18:00 Final minutes check', '22:00 Full mock timing'],
+    rating: 4.8
+  },
+  {
+    id: 'V034', title: 'Digital SAT vs Old SAT — Everything That Changed (2024 Format)',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: 'zkAHD2quHvk',
+    duration: '21:18', views: '617K',
+    section: 'all', topic: 'Strategy', difficulty: 'easy',
+    description: "New to the Digital SAT? Here's exactly what changed: shorter passages, calculator throughout all math, Desmos built-in, adaptive modules, 2h14min total time, Bluebook delivery, and the new scoring system. Includes a side-by-side comparison of old vs new question types.",
+    tags: ['digital SAT', 'format', 'overview', 'what changed'],
+    timestamps: ['0:00 Overview of changes', '5:00 Reading & Writing changes', '10:00 Math changes', '15:00 Scoring & timing', '18:00 How to start prepping'],
+    rating: 4.8
+  },
+  {
+    id: 'V035', title: 'SAT Elimination Strategies — How to Get Points Without Knowing the Answer',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'PUB0TaZ7bhA',
+    duration: '28:50', views: '234K',
+    section: 'all', topic: 'Strategy', difficulty: 'medium',
+    description: 'You can score 1400+ without knowing every answer — if you know how to eliminate. Covers the "too extreme" rule (for reading), "numbers in choices" traps (for math), absolute language trap, scope errors, and the process of elimination strategy that works even when you have zero context.',
+    tags: ['elimination', 'strategy', 'process of elimination', 'guessing'],
+    timestamps: ['0:00 Why elimination works', '6:00 Reading elimination rules', '14:00 Math elimination rules', '20:00 When to guess', '24:00 Practice drill'],
+    rating: 4.7
+  },
+  {
+    id: 'V036', title: 'How to Score 1500+ on the Digital SAT — What Top Scorers Do Differently',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'yqagAW-JIfM',
+    duration: '44:30', views: '389K',
+    section: 'all', topic: 'Strategy', difficulty: 'hard',
+    description: "Analysis of what separates 1400-scorers from 1500-scorers: the exact question types they're losing points on, why smart students miss easy questions (carelessness patterns), and the 30-day study plan that the top 1% of scorers follow. Based on analysis of hundreds of student practice tests.",
+    tags: ['1500+', 'top scorer', 'strategy', 'study plan', 'advanced'],
+    timestamps: ['0:00 The gap between 1400 and 1500', '8:00 Carelessness patterns', '16:00 Hard R&W techniques', '24:00 Hard math techniques', '34:00 30-day plan'],
+    rating: 4.9
+  },
+  {
+    id: 'V037', title: 'SAT Perfect 800 Math Strategies — The Final 50 Points Blueprint',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'sTsop8RdLYM',
+    duration: '39:00', views: '275K',
+    section: 'math', topic: 'Strategy', difficulty: 'hard',
+    description: "Going from 750 to 800 on SAT math requires a different approach — it's no longer about covering more material but eliminating careless errors on medium questions and cracking 5-6 very hard questions per test. This video analyzes the hardest 5 question types and gives foolproof methods for each.",
+    tags: ['800 math', 'perfect score', 'advanced strategy', 'hard questions'],
+    timestamps: ['0:00 The 750-to-800 gap', '7:00 Careless error audit', '14:00 Hardest question types', '24:00 Desmos for hard questions', '33:00 Mock test review'],
+    rating: 4.9
+  },
+  {
+    id: 'V038', title: 'How to Use Bluebook — Official Digital SAT Practice App Walkthrough',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: '2ZzuZvz33X0',
+    duration: '18:45', views: '468K',
+    section: 'all', topic: 'Strategy', difficulty: 'easy',
+    description: 'Step-by-step guide to the College Board Bluebook app — the official Digital SAT practice tool. Covers installation, taking practice tests, using the built-in Desmos calculator, flagging questions for review, checking your answers, and interpreting your score report.',
+    tags: ['bluebook', 'college board', 'official practice', 'app guide'],
+    timestamps: ['0:00 Installing Bluebook', '4:00 Starting a practice test', '8:00 Using Desmos in Bluebook', '12:00 Flagging & reviewing', '15:00 Reading your score report'],
+    rating: 4.9
+  },
+  {
+    id: 'V039', title: 'Digital SAT Practice Test 2 — Full Math Walkthrough with Explanations',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'YbdkHgI3GDM',
+    duration: '1:34:22', views: '218K',
+    section: 'math', topic: 'All Math Topics', difficulty: 'medium',
+    description: 'Complete video walkthrough of Digital SAT Practice Test 2 math section — every question explained step by step. Covers both modules, points out which approach is fastest, and shows where Desmos saves time. Critical for students who scored lower than expected on their first practice test.',
+    tags: ['practice test', 'walkthrough', 'test 2', 'math'],
+    timestamps: ['0:00 Intro', '5:00 Module 1 start', '48:00 Module 2 start', '1:25:00 Most missed questions', '1:30:00 Key takeaways'],
+    rating: 4.8
+  },
+  {
+    id: 'V040', title: 'Khan Academy SAT Prep — How to Use It Effectively for Maximum Score Gain',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: 'oVjDGBrHxUg',
+    duration: '23:05', views: '392K',
+    section: 'all', topic: 'Strategy', difficulty: 'easy',
+    description: "Khan Academy's official SAT prep is completely free and highly effective — but most students don't use it correctly. This video shows the optimal study workflow: daily practice questions, personalizing the practice plan, connecting your PSAT scores, interpreting recommendations, and tracking skill progress.",
+    tags: ['khan academy', 'free prep', 'study workflow', 'official'],
+    timestamps: ['0:00 Why Khan Academy works', '5:00 Setting up your account', '10:00 Daily practice workflow', '16:00 Connecting PSAT scores', '20:00 Tracking progress'],
+    rating: 4.9
+  },
+  {
+    id: 'V041', title: 'Digital SAT R&W: Inferences & Reasoning — How to Choose the Right Answer',
+    channel: 'Erica Meltzer SAT', channelAvatar: 'E',
+    videoId: 'qY_Xep6SHCM',
+    duration: '32:00', views: '145K',
+    section: 'reading_writing', topic: 'Information & Ideas', difficulty: 'hard',
+    description: 'Inference questions ask you to draw a conclusion that must be true based on the passage. These trips up most students because wrong answers are often partially true or true but unsupported. Learn to spot "too strong," "out of scope," and "opposite direction" traps that are planted in every Digital SAT.',
+    tags: ['inferences', 'reasoning', 'reading strategy', 'critical thinking'],
+    timestamps: ['0:00 What is a valid inference?', '6:00 Must be true vs could be true', '12:00 Too strong trap', '18:00 Out of scope trap', '26:00 Practice set'],
+    rating: 4.8
+  },
+  {
+    id: 'V042', title: 'SAT Reading: Science Passages — How to Attack Data-Heavy Texts',
+    channel: 'PrepScholar', channelAvatar: 'D',
+    videoId: 'YYm9VBnozPk',
+    duration: '26:18', views: '118K',
+    section: 'reading_writing', topic: 'Information & Ideas', difficulty: 'hard',
+    description: "The Digital SAT includes science passages with charts and data. This video teaches you to read science texts efficiently (don't get lost in jargon), answer quantitative evidence questions from graphs, synthesize data from a chart and text together, and avoid the trap of choosing answers that 'sound scientific.'",
+    tags: ['science passages', 'data', 'charts', 'quantitative evidence'],
+    timestamps: ['0:00 Science passage structure', '6:00 Reading strategy for science', '12:00 Chart questions', '18:00 Synthesis questions', '22:00 Practice'],
+    rating: 4.7
+  },
+  {
+    id: 'V043', title: 'SAT: Nonlinear Systems of Equations — The Hardest Math Question Type',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'SMJwEYmXcSU',
+    duration: '30:22', views: '178K',
+    section: 'math', topic: 'Advanced Math', difficulty: 'hard',
+    description: 'Nonlinear systems (a line and a parabola, or two parabolas) are among the hardest questions on the Digital SAT, appearing in Module 2 of the hard path. Learn the substitution method, how to set equations equal, using the discriminant to find the number of solutions, and the Desmos graphical shortcut.',
+    tags: ['nonlinear systems', 'hard math', 'advanced algebra', 'systems'],
+    timestamps: ['0:00 What are nonlinear systems?', '5:00 Substitution method', '12:00 Using the discriminant', '20:00 Desmos shortcut', '25:00 College Board examples'],
+    rating: 4.9
+  },
+  {
+    id: 'V044', title: 'Digital SAT: Circles in the Coordinate Plane — Complete Lesson',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: 'BNaUK1Fxn3g',
+    duration: '22:30', views: '197K',
+    section: 'math', topic: 'Geometry', difficulty: 'medium',
+    description: 'Circles in the coordinate plane appear on every Digital SAT. Master the standard form (x-h)²+(y-k)²=r², converting from general form by completing the square, finding center and radius, arc length and sector area formulas, and the inscribed angle theorem.',
+    tags: ['circles', 'coordinate geometry', 'arc length', 'sector area'],
+    timestamps: ['0:00 Circle standard form', '6:00 Completing the square', '12:00 Arc length', '16:00 Sector area', '19:00 Inscribed angles'],
+    rating: 4.7
+  },
+  {
+    id: 'V045', title: 'SAT Math: Linear vs Exponential Models — How to Tell Them Apart',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'kP3aKTQZxqg',
+    duration: '21:10', views: '203K',
+    section: 'math', topic: 'Data Analysis', difficulty: 'medium',
+    description: 'One of the most commonly missed question types: recognizing whether a real-world scenario should be modeled with a linear or exponential function. Learn the key signal words in the passage, table patterns that indicate each type, and how to write both models from a table or description.',
+    tags: ['linear models', 'exponential models', 'modeling', 'data'],
+    timestamps: ['0:00 Linear vs exponential signals', '6:00 Table pattern recognition', '11:00 Writing linear models', '15:00 Writing exponential models', '18:00 Practice'],
+    rating: 4.8
+  },
+  {
+    id: 'V046', title: 'SAT: Imaginary Numbers & Complex Numbers — Everything Tested',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'zkAHD2quHvk',
+    duration: '18:40', views: '155K',
+    section: 'math', topic: 'Advanced Math', difficulty: 'hard',
+    description: 'Complex/imaginary numbers appear 1-2 times per Digital SAT in the harder math module. Master: the definition of i (√-1), powers of i cycle (i¹=i, i²=-1, i³=-i, i⁴=1), adding/subtracting/multiplying complex numbers, and the conjugate trick for division.',
+    tags: ['imaginary numbers', 'complex numbers', 'advanced math', 'hard'],
+    timestamps: ['0:00 What is i?', '3:00 Powers of i', '7:00 Operations with complex numbers', '12:00 The conjugate', '15:00 Practice problems'],
+    rating: 4.7
+  },
+  {
+    id: 'V047', title: 'Digital SAT: Absolute Value Equations & Inequalities (Complete)',
+    channel: 'Khan Academy', channelAvatar: 'K',
+    videoId: 'PUB0TaZ7bhA',
+    duration: '17:25', views: '168K',
+    section: 'math', topic: 'Algebra', difficulty: 'medium',
+    description: 'Absolute value questions appear on every Digital SAT. Learn to split absolute value equations into two cases, solve absolute value inequalities (and vs or), graph absolute value on the number line, and avoid the #1 mistake (forgetting to check for extraneous solutions).',
+    tags: ['absolute value', 'equations', 'inequalities', 'algebra'],
+    timestamps: ['0:00 Absolute value equations', '6:00 Two-case method', '10:00 Absolute value inequalities', '13:00 Number line graphing', '15:00 Extraneous solutions'],
+    rating: 4.7
+  },
+  {
+    id: 'V048', title: 'SAT Math: Sequences & Series — Arithmetic, Geometric & Recursive',
+    channel: 'Scalar Learning', channelAvatar: 'S',
+    videoId: 'sTsop8RdLYM',
+    duration: '23:15', views: '142K',
+    section: 'math', topic: 'Advanced Math', difficulty: 'medium',
+    description: 'Sequences appear more often on the Digital SAT than most students expect. Covers arithmetic sequences (common difference, nth term formula), geometric sequences (common ratio, nth term), recursive definitions (f(n) = f(n-1) + k), and how to quickly find any term without computing all previous ones.',
+    tags: ['sequences', 'arithmetic', 'geometric', 'recursive'],
+    timestamps: ['0:00 Arithmetic sequences', '6:00 nth term formula', '11:00 Geometric sequences', '16:00 Recursive definitions', '20:00 Practice'],
+    rating: 4.6
+  },
+  {
+    id: 'V049', title: 'I Improved My SAT Score by 400 Points — My Exact Study Strategy',
+    channel: 'SAT Math Pro', channelAvatar: 'M',
+    videoId: 'eJ-mfsqyK4w',
+    duration: '19:30', views: '682K',
+    section: 'all', topic: 'Strategy', difficulty: 'easy',
+    description: "A real student's breakdown of how they went from 1000 to 1400+ on the Digital SAT: the 10-week schedule, which resources they used each week, how they diagnosed weaknesses, the daily practice routine, and the mindset shifts that made the biggest difference. The most-watched SAT improvement story on YouTube.",
+    tags: ['score improvement', 'study plan', 'motivation', 'real story'],
+    timestamps: ['0:00 My starting score of 1000', '4:00 Week 1-3 diagnostic phase', '7:00 Week 4-7 targeted practice', '11:00 Week 8-10 full tests', '15:00 Test day tips'],
+    rating: 4.8
+  },
+  {
+    id: 'V050', title: 'Digital SAT Reading & Writing: Full Section Walkthrough — Practice Test 1',
+    channel: 'PrepScholar', channelAvatar: 'D',
+    videoId: 'OKxQxpJULH8',
+    duration: '1:18:44', views: '177K',
+    section: 'reading_writing', topic: 'All R&W Topics', difficulty: 'medium',
+    description: "Complete walkthrough of Digital SAT Practice Test 1's Reading & Writing section. Every question answered with a full explanation: why the right answer is right, why each wrong answer is wrong, and which technique to apply. Covers all four R&W domains in the order they appear on the real test.",
+    tags: ['practice test', 'walkthrough', 'reading writing', 'all topics'],
+    timestamps: ['0:00 Intro', '5:00 Craft & Structure questions', '22:00 Information & Ideas', '38:00 Standard English Conventions', '58:00 Expression of Ideas', '1:12:00 Key takeaways'],
+    rating: 4.8
   }
 ];
 
@@ -6986,16 +7426,21 @@ const SAT_FORMULAS = {
     { name: '5-12-13 Right Triangle', expr: 'Sides: 5, 12, 13', note: 'Another common Pythagorean triple to recognize instantly' }
   ],
   'Statistics & Probability': [
-    { name: 'Mean (Average)', expr: 'x̄ = Σx / n', note: 'Sum of all values divided by the number of values' },
-    { name: 'Median', expr: 'Middle value when data is ordered', note: 'If even count: average of two middle values' },
-    { name: 'Percent Change', expr: '% Change = (New − Old) / Old × 100', note: 'Positive = increase; negative = decrease' },
-    { name: 'Probability', expr: 'P(A) = favorable outcomes / total outcomes', note: 'Always between 0 and 1 inclusive' },
-    { name: 'Conditional Probability', expr: 'P(A|B) = P(A and B) / P(B)', note: 'Probability of A given B has occurred' }
+    { name: 'Mean (Average)', expr: 'x̄ = Σx / n', note: 'Sum of all values ÷ count of values' },
+    { name: 'Median', expr: 'M = middle value (data sorted)', note: 'Even count: average the two middle values' },
+    { name: 'Mode', expr: 'Most frequently occurring value', note: 'A dataset can have multiple modes or none' },
+    { name: 'Range', expr: 'Range = Max − Min', note: 'Spread of the data set' },
+    { name: 'Percent Change', expr: '% Change = [(New − Old) / Old] × 100', note: 'Positive = increase; negative = decrease' },
+    { name: 'Probability', expr: 'P(A) = (# favorable) / (# total)', note: '0 ≤ P(A) ≤ 1 always; P(impossible) = 0, P(certain) = 1' },
+    { name: 'Complementary Events', expr: 'P(not A) = 1 − P(A)', note: 'The probability of an event NOT occurring' },
+    { name: 'Conditional Probability', expr: 'P(A|B) = P(A ∩ B) / P(B)', note: 'Probability of A given that B has occurred' }
   ],
   'Trigonometry': [
-    { name: 'SOH-CAH-TOA', expr: 'sin θ = opp/hyp, cos θ = adj/hyp, tan θ = opp/adj', note: 'Memorize this — it appears every test' },
-    { name: 'Complementary Angles', expr: 'sin θ = cos(90°−θ)', note: 'Sin of an angle equals cosine of its complement' },
-    { name: 'Pythagorean Identity', expr: 'sin²θ + cos²θ = 1', note: 'True for all angles θ' }
+    { name: 'Sine (SOH)', expr: 'sin θ = opposite / hypotenuse', note: 'SOH — the side opposite the angle over hypotenuse' },
+    { name: 'Cosine (CAH)', expr: 'cos θ = adjacent / hypotenuse', note: 'CAH — the side adjacent to the angle over hypotenuse' },
+    { name: 'Tangent (TOA)', expr: 'tan θ = opposite / adjacent', note: 'TOA — also equals sin θ / cos θ' },
+    { name: 'Complementary Angles', expr: 'sin θ = cos(90° − θ)', note: 'Sin of any angle = cosine of its complement' },
+    { name: 'Pythagorean Identity', expr: 'sin²θ + cos²θ = 1', note: 'True for all angles; derivable from a²+b²=c²' }
   ]
 };
 

@@ -68,6 +68,13 @@
           <path d="M3 3h12v12H3z"/><path d="M6 8h6M6 11h4"/>
         </svg>
         Practice Tests
+      </div>
+      <div class="nav-item" data-page="fulltest">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="1" y="2" width="16" height="14" rx="2"/>
+          <path d="M1 6h16M5 10h2M9 10h4M5 13h3"/>
+        </svg>
+        Full Tests
         <span class="nav-badge">New</span>
       </div>
       <div class="nav-item" data-page="flashcards">
@@ -242,7 +249,7 @@
         </div>
 
         <!-- Charts Row -->
-        <div class="grid-2" style="margin-bottom:24px">
+        <div class="grid-2" id="dashChartsRow" style="margin-bottom:24px">
           <div class="chart-card">
             <div class="card-header">
               <h3>Score Progress</h3>
@@ -424,6 +431,207 @@
       </section>
 
       <!-- ═══════════════════════════════════════════════════════
+           FULL PRACTICE TESTS
+           ═══════════════════════════════════════════════════════ -->
+      <section class="page-section" id="page-fulltest">
+
+        <!-- ── Hub (shown when no test is active) ── -->
+        <div id="fulltestHub">
+          <div class="page-header">
+            <h1>Full Practice Tests</h1>
+            <p>Real Digital SAT format — 4 adaptive modules, timed per module, instant score report.</p>
+          </div>
+
+          <!-- Format Overview -->
+          <div class="chart-card" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(167,139,250,0.04));border-color:rgba(99,102,241,0.3)">
+            <div class="card-header">
+              <h3>Digital SAT Format</h3>
+              <span class="badge badge-indigo">Official Structure</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px">
+              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
+                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 1 — R&W</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--violet);margin-bottom:4px">27 Questions</div>
+                <div style="font-size:.8rem;color:var(--text-secondary)">32 minutes · Standard difficulty</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
+                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 2 — R&W</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--violet);margin-bottom:4px">27 Questions</div>
+                <div style="font-size:.8rem;color:var(--text-secondary)">32 minutes · Adaptive</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
+                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 1 — Math</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--indigo);margin-bottom:4px">22 Questions</div>
+                <div style="font-size:.8rem;color:var(--text-secondary)">35 minutes · Standard difficulty</div>
+              </div>
+              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
+                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 2 — Math</div>
+                <div style="font-size:1.1rem;font-weight:700;color:var(--indigo);margin-bottom:4px">22 Questions</div>
+                <div style="font-size:.8rem;color:var(--text-secondary)">35 minutes · Adaptive</div>
+              </div>
+            </div>
+            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:24px;flex-wrap:wrap">
+              <div style="font-size:.82rem;color:var(--text-secondary)">⏱ Total time: <strong style="color:var(--text-primary)">2h 14min</strong></div>
+              <div style="font-size:.82rem;color:var(--text-secondary)">❓ Total questions: <strong style="color:var(--text-primary)">98</strong></div>
+              <div style="font-size:.82rem;color:var(--text-secondary)">📊 Scoring: <strong style="color:var(--text-primary)">400 – 1600</strong></div>
+              <div style="font-size:.82rem;color:var(--text-secondary)">🎯 Adaptive: <strong style="color:var(--text-primary)">Module 2 adjusts to Module 1 performance</strong></div>
+            </div>
+          </div>
+
+          <!-- Test Cards -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px">
+            <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(1)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+                <div>
+                  <div style="font-weight:700;font-size:1rem">Practice Test 1</div>
+                  <div style="font-size:.78rem;color:var(--text-muted)">Full 4-module test · 98 questions</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:14px">
+                <span class="badge badge-indigo">Math</span>
+                <span class="badge badge-violet">R&W</span>
+                <span class="badge badge-emerald">Timed</span>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(1)">Start Test →</button>
+            </div>
+            <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(2)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#a78bfa,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+                <div>
+                  <div style="font-weight:700;font-size:1rem">Practice Test 2</div>
+                  <div style="font-size:.78rem;color:var(--text-muted)">Full 4-module test · 98 questions</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:14px">
+                <span class="badge badge-indigo">Math</span>
+                <span class="badge badge-violet">R&W</span>
+                <span class="badge badge-emerald">Timed</span>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(2)">Start Test →</button>
+            </div>
+            <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(3)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#22d3ee,#10b981);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+                <div>
+                  <div style="font-weight:700;font-size:1rem">Practice Test 3</div>
+                  <div style="font-size:.78rem;color:var(--text-muted)">Full 4-module test · 98 questions</div>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-bottom:14px">
+                <span class="badge badge-indigo">Math</span>
+                <span class="badge badge-violet">R&W</span>
+                <span class="badge badge-emerald">Timed</span>
+              </div>
+              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(3)">Start Test →</button>
+            </div>
+          </div>
+
+          <!-- Past Test Results -->
+          <div class="chart-card">
+            <div class="card-header">
+              <h3>Your Test History</h3>
+            </div>
+            <div id="fulltestHistory" style="margin-top:4px"></div>
+          </div>
+        </div>
+
+        <!-- ── Active Test UI ── -->
+        <div id="fulltestActive" style="display:none">
+          <!-- Module Header -->
+          <div style="background:rgba(99,102,241,0.08);border:1px solid rgba(99,102,241,0.2);border-radius:16px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+            <div>
+              <div id="ftModuleLabel" style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px">Module 1 — Reading & Writing</div>
+              <div id="ftProgressLabel" style="font-size:.9rem;font-weight:700">Question 1 of 27</div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:center;gap:16px">
+              <div style="text-align:right">
+                <div style="font-size:.7rem;color:var(--text-muted);margin-bottom:2px">Time Remaining</div>
+                <div id="ftTimer" style="font-family:'JetBrains Mono',monospace;font-size:1.3rem;font-weight:700;color:var(--emerald)">32:00</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="pauseFullTest()" id="ftPauseBtn">⏸ Pause</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--rose)" onclick="quitFullTest()">✕ Quit</button>
+            </div>
+          </div>
+
+          <!-- Progress Bar -->
+          <div style="background:rgba(255,255,255,0.06);border-radius:8px;height:4px;margin-bottom:20px;overflow:hidden">
+            <div id="ftProgressBar" style="height:100%;background:linear-gradient(90deg,var(--indigo),var(--violet));width:0%;transition:width .3s ease;border-radius:8px"></div>
+          </div>
+
+          <!-- Question -->
+          <div class="chart-card" style="margin-bottom:16px">
+            <div id="ftQuestionMeta" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px"></div>
+            <div id="ftPassage" style="background:rgba(255,255,255,0.04);border-left:3px solid var(--indigo);border-radius:0 8px 8px 0;padding:14px 16px;margin-bottom:16px;font-size:.9rem;line-height:1.75;color:var(--text-secondary);display:none"></div>
+            <div id="ftQuestionText" style="font-size:1rem;font-weight:500;line-height:1.65;margin-bottom:20px;color:var(--text-primary)"></div>
+            <div id="ftAnswerChoices" style="display:flex;flex-direction:column;gap:10px"></div>
+          </div>
+
+          <!-- Explanation (shown after answer) -->
+          <div id="ftExplanationCard" class="hidden" style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:14px;padding:16px;margin-bottom:16px">
+            <div style="font-size:.78rem;font-weight:700;color:var(--emerald);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Explanation</div>
+            <div id="ftExplanationText" style="font-size:.87rem;color:var(--text-secondary);line-height:1.65"></div>
+          </div>
+
+          <!-- Navigation -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <button class="btn btn-ghost" onclick="ftPrevQ()" id="ftPrevBtn" disabled>← Previous</button>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="ftFlagQ()" id="ftFlagBtn" title="Flag for review">🚩 Flag</button>
+            </div>
+            <button class="btn btn-primary" onclick="ftNextQ()" id="ftNextBtn">Next →</button>
+          </div>
+        </div>
+
+        <!-- ── Score Report (shown after all modules done) ── -->
+        <div id="fulltestReport" style="display:none">
+          <div class="page-header">
+            <h1>Test Complete!</h1>
+            <p>Here is your full score breakdown for this practice test.</p>
+          </div>
+          <div class="chart-card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(167,139,250,0.04));border-color:rgba(99,102,241,0.3)">
+            <div style="text-align:center;padding:24px 0">
+              <div style="font-size:.8rem;color:var(--text-muted);font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Estimated SAT Score</div>
+              <div id="ftTotalScore" style="font-size:4rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#a78bfa,#22d3ee);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:4px">—</div>
+              <div style="font-size:1rem;color:var(--text-muted);margin-bottom:20px">out of 1600</div>
+              <div style="display:flex;gap:24px;justify-content:center;flex-wrap:wrap">
+                <div style="text-align:center">
+                  <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Reading & Writing</div>
+                  <div id="ftRWScore" style="font-size:2rem;font-weight:700;color:var(--violet)">—</div>
+                  <div style="font-size:.7rem;color:var(--text-muted)">out of 800</div>
+                </div>
+                <div style="width:1px;background:var(--border)"></div>
+                <div style="text-align:center">
+                  <div style="font-size:.75rem;color:var(--text-muted);margin-bottom:4px">Math</div>
+                  <div id="ftMathScore" style="font-size:2rem;font-weight:700;color:var(--indigo)">—</div>
+                  <div style="font-size:.7rem;color:var(--text-muted)">out of 800</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Module Breakdown -->
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:20px" id="ftModuleBreakdown"></div>
+
+          <!-- Wrong Answers Review -->
+          <div class="chart-card" style="margin-bottom:20px">
+            <div class="card-header">
+              <h3>Review Incorrect Answers</h3>
+              <span id="ftWrongCount" class="badge badge-rose">0 missed</span>
+            </div>
+            <div id="ftWrongList" style="margin-top:8px;display:flex;flex-direction:column;gap:12px"></div>
+          </div>
+
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="initFullTestPage()">← Take Another Test</button>
+            <button class="btn btn-ghost" onclick="navigateTo('practice')">Quick Practice</button>
+            <button class="btn btn-ghost" onclick="navigateTo('formulas')">Review Formulas</button>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ═══════════════════════════════════════════════════════
            FLASHCARDS
            ═══════════════════════════════════════════════════════ -->
       <section class="page-section" id="page-flashcards">
@@ -545,7 +753,7 @@
           <button class="filter-chip active" data-filter="all">All Videos</button>
           <button class="filter-chip" data-filter="math">Math</button>
           <button class="filter-chip" data-filter="reading_writing">Reading & Writing</button>
-          <button class="filter-chip" data-filter="all">Strategy</button>
+          <button class="filter-chip" data-filter="strategy">Strategy</button>
         </div>
 
         <div class="grid-3" id="videoGrid"></div>
