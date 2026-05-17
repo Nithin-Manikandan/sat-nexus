@@ -67,7 +67,7 @@
         <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M3 3h12v12H3z"/><path d="M6 8h6M6 11h4"/>
         </svg>
-        Practice Tests
+        Practice Questions
       </div>
       <div class="nav-item" data-page="fulltest">
         <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -81,7 +81,7 @@
         <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
           <rect x="1" y="4" width="16" height="11" rx="2"/><path d="M5 8h8M5 11h5"/>
         </svg>
-        Flashcards
+        Vocab Flashcards
       </div>
       <div class="nav-item" data-page="formulas">
         <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -220,6 +220,27 @@
           </div>
         </div>
 
+        <!-- Question of the Day -->
+        <div class="chart-card" id="qotdCard" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(34,211,238,0.04));border-color:rgba(99,102,241,0.25)">
+          <div class="card-header" style="margin-bottom:14px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <span style="font-size:1.1rem">⚡</span>
+              <h3 style="margin:0">Question of the Day</h3>
+              <span class="badge badge-indigo" style="font-size:.65rem">DAILY CHALLENGE</span>
+            </div>
+            <span id="qotdDate" style="font-size:.75rem;color:var(--text-muted)"></span>
+          </div>
+          <div id="qotdMeta" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
+          <div id="qotdPassage" style="background:rgba(255,255,255,0.04);border-left:3px solid var(--indigo);border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:14px;font-size:.88rem;line-height:1.75;color:var(--text-secondary);display:none"></div>
+          <div id="qotdText" style="font-size:.97rem;font-weight:500;line-height:1.65;margin-bottom:18px;color:var(--text-primary)"></div>
+          <div id="qotdChoices" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+          <div id="qotdExplanation" style="display:none;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:14px;margin-bottom:12px">
+            <div style="font-size:.72rem;font-weight:700;color:var(--emerald);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Explanation</div>
+            <div id="qotdExplanationText" style="font-size:.85rem;color:var(--text-secondary);line-height:1.65"></div>
+          </div>
+          <button id="qotdRevealBtn" class="btn btn-primary btn-sm" onclick="revealQOTD()">See Answer</button>
+        </div>
+
         <!-- Stats Grid -->
         <div class="grid-4" id="dashStatsGrid" style="margin-bottom:24px">
           <div class="stat-card">
@@ -303,8 +324,8 @@
       <section class="page-section" id="page-practice">
         <div id="practiceHome">
           <div class="page-header">
-            <h1>Practice Tests</h1>
-            <p>SAT-style questions across every topic. Timed, adaptive, and instantly scored.</p>
+            <h1>Practice Questions</h1>
+            <p>435+ SAT-style questions across every topic. Instantly scored with full explanations.</p>
           </div>
 
           <!-- Quick start -->
@@ -439,100 +460,119 @@
         <div id="fulltestHub">
           <div class="page-header">
             <h1>Full Practice Tests</h1>
-            <p>Real Digital SAT format — 4 adaptive modules, timed per module, instant score report.</p>
+            <p>Real Digital SAT format — 4 modules, timed, scored 400–1600.</p>
           </div>
 
-          <!-- Format Overview -->
-          <div class="chart-card" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(167,139,250,0.04));border-color:rgba(99,102,241,0.3)">
-            <div class="card-header">
-              <h3>Digital SAT Format</h3>
-              <span class="badge badge-indigo">Official Structure</span>
-            </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:8px">
-              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
-                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 1 — R&W</div>
-                <div style="font-size:1.1rem;font-weight:700;color:var(--violet);margin-bottom:4px">27 Questions</div>
-                <div style="font-size:.8rem;color:var(--text-secondary)">32 minutes · Standard difficulty</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
-                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 2 — R&W</div>
-                <div style="font-size:1.1rem;font-weight:700;color:var(--violet);margin-bottom:4px">27 Questions</div>
-                <div style="font-size:.8rem;color:var(--text-secondary)">32 minutes · Adaptive</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
-                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 1 — Math</div>
-                <div style="font-size:1.1rem;font-weight:700;color:var(--indigo);margin-bottom:4px">22 Questions</div>
-                <div style="font-size:.8rem;color:var(--text-secondary)">35 minutes · Standard difficulty</div>
-              </div>
-              <div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:14px">
-                <div style="font-size:.7rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Module 2 — Math</div>
-                <div style="font-size:1.1rem;font-weight:700;color:var(--indigo);margin-bottom:4px">22 Questions</div>
-                <div style="font-size:.8rem;color:var(--text-secondary)">35 minutes · Adaptive</div>
-              </div>
-            </div>
-            <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);display:flex;gap:24px;flex-wrap:wrap">
-              <div style="font-size:.82rem;color:var(--text-secondary)">⏱ Total time: <strong style="color:var(--text-primary)">2h 14min</strong></div>
-              <div style="font-size:.82rem;color:var(--text-secondary)">❓ Total questions: <strong style="color:var(--text-primary)">98</strong></div>
-              <div style="font-size:.82rem;color:var(--text-secondary)">📊 Scoring: <strong style="color:var(--text-primary)">400 – 1600</strong></div>
-              <div style="font-size:.82rem;color:var(--text-secondary)">🎯 Adaptive: <strong style="color:var(--text-primary)">Module 2 adjusts to Module 1 performance</strong></div>
-            </div>
+          <!-- Tabs -->
+          <div style="display:flex;gap:4px;background:rgba(255,255,255,0.04);border-radius:12px;padding:4px;margin-bottom:24px;width:fit-content">
+            <button id="ftTabOfficial" onclick="showFTTab('official')" style="padding:8px 20px;border-radius:9px;border:none;font-size:.87rem;font-weight:600;cursor:pointer;background:linear-gradient(135deg,var(--indigo),var(--violet));color:#fff;transition:all .2s">Official Tests</button>
+            <button id="ftTabGenerated" onclick="showFTTab('generated')" style="padding:8px 20px;border-radius:9px;border:none;font-size:.87rem;font-weight:600;cursor:pointer;background:transparent;color:var(--text-secondary);transition:all .2s">Generated Tests</button>
           </div>
 
-          <!-- Test Cards -->
-          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px">
-            <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(1)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
-                <div>
-                  <div style="font-weight:700;font-size:1rem">Practice Test 1</div>
-                  <div style="font-size:.78rem;color:var(--text-muted)">Full 4-module test · 98 questions</div>
-                </div>
+          <!-- Official Tests Tab -->
+          <div id="ftPanelOfficial">
+            <div class="chart-card" style="margin-bottom:20px;background:rgba(16,185,129,0.05);border-color:rgba(16,185,129,0.2)">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+                <span style="font-size:1.1rem">✅</span>
+                <strong style="font-size:.9rem">Why take official tests?</strong>
               </div>
-              <div style="display:flex;gap:8px;margin-bottom:14px">
-                <span class="badge badge-indigo">Math</span>
-                <span class="badge badge-violet">R&W</span>
-                <span class="badge badge-emerald">Timed</span>
-              </div>
-              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(1)">Start Test →</button>
+              <p style="font-size:.82rem;color:var(--text-secondary);line-height:1.6;margin:0">Official tests use real College Board passages and questions — the most accurate practice. Always take these before test day. These links open the real tests in a new tab.</p>
             </div>
-            <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(2)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#a78bfa,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
-                <div>
-                  <div style="font-weight:700;font-size:1rem">Practice Test 2</div>
-                  <div style="font-size:.78rem;color:var(--text-muted)">Full 4-module test · 98 questions</div>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:24px">
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="window.open('https://bluebook.collegeboard.org','_blank')" onmouseenter="this.style.borderColor='rgba(16,185,129,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#10b981,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📘</div>
+                  <div><div style="font-weight:700">Bluebook — College Board</div><div style="font-size:.75rem;color:var(--text-muted)">Official Digital SAT app · 8 full tests free</div></div>
                 </div>
+                <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">The ONLY official Digital SAT practice app. Mirrors the real test interface exactly, including Desmos calculator, markup tools, and adaptive modules.</p>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-emerald">Free</span><span class="badge badge-indigo">Official</span><span class="badge badge-violet">Adaptive</span></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();window.open('https://bluebook.collegeboard.org','_blank')">Open Bluebook →</button>
               </div>
-              <div style="display:flex;gap:8px;margin-bottom:14px">
-                <span class="badge badge-indigo">Math</span>
-                <span class="badge badge-violet">R&W</span>
-                <span class="badge badge-emerald">Timed</span>
-              </div>
-              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(2)">Start Test →</button>
-            </div>
-            <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(3)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
-              <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
-                <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#22d3ee,#10b981);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
-                <div>
-                  <div style="font-weight:700;font-size:1rem">Practice Test 3</div>
-                  <div style="font-size:.78rem;color:var(--text-muted)">Full 4-module test · 98 questions</div>
+
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="window.open('https://www.khanacademy.org/test-prep/v2-sat','_blank')" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#818cf8);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">🎓</div>
+                  <div><div style="font-weight:700">Khan Academy SAT Prep</div><div style="font-size:.75rem;color:var(--text-muted)">Official CB partner · Personalized practice</div></div>
                 </div>
+                <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">Built in partnership with College Board. Full practice tests plus targeted skill practice. Links to your PSAT scores to personalize recommendations.</p>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-emerald">Free</span><span class="badge badge-indigo">Official</span></div>
+                <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="event.stopPropagation();window.open('https://www.khanacademy.org/test-prep/v2-sat','_blank')">Open Khan Academy →</button>
               </div>
-              <div style="display:flex;gap:8px;margin-bottom:14px">
-                <span class="badge badge-indigo">Math</span>
-                <span class="badge badge-violet">R&W</span>
-                <span class="badge badge-emerald">Timed</span>
+
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="window.open('https://www.princetonreview.com/college-admission/sat-practice-tests','_blank')" onmouseenter="this.style.borderColor='rgba(167,139,250,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#a78bfa,#f472b6);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📋</div>
+                  <div><div style="font-weight:700">Princeton Review</div><div style="font-size:.75rem;color:var(--text-muted)">Highly rated prep company · Digital format</div></div>
+                </div>
+                <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">One of the top SAT prep companies. Offers full-length Digital SAT practice tests with detailed score reports and section-level analysis.</p>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-violet">Paid plans</span><span class="badge badge-indigo">Free trial</span></div>
+                <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="event.stopPropagation();window.open('https://www.princetonreview.com/college-admission/sat-practice-tests','_blank')">Open Princeton Review →</button>
               </div>
-              <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(3)">Start Test →</button>
+
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="window.open('https://www.ivyglobal.com/study/sat-practice-tests','_blank')" onmouseenter="this.style.borderColor='rgba(34,211,238,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#22d3ee,#10b981);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0">📄</div>
+                  <div><div style="font-weight:700">Ivy Global SAT Tests</div><div style="font-size:.75rem;color:var(--text-muted)">Free PDF practice tests · Digital format</div></div>
+                </div>
+                <p style="font-size:.8rem;color:var(--text-secondary);margin-bottom:14px;line-height:1.5">Free, downloadable full-length Digital SAT practice tests in PDF format. Great for print-and-practice or offline study. Multiple tests available.</p>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-emerald">Free</span><span class="badge badge-cyan">PDF</span></div>
+                <button class="btn btn-ghost" style="width:100%;justify-content:center" onclick="event.stopPropagation();window.open('https://www.ivyglobal.com/study/sat-practice-tests','_blank')">Open Ivy Global →</button>
+              </div>
             </div>
           </div>
 
-          <!-- Past Test Results -->
-          <div class="chart-card">
-            <div class="card-header">
-              <h3>Your Test History</h3>
+          <!-- Generated Tests Tab -->
+          <div id="ftPanelGenerated" style="display:none">
+            <!-- Format Info -->
+            <div class="chart-card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(167,139,250,0.04));border-color:rgba(99,102,241,0.3)">
+              <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:center">
+                <div style="font-size:.82rem;color:var(--text-secondary)">📐 Structure: <strong style="color:var(--text-primary)">RW1 (27q/32min) → RW2 (27q/32min) → Math1 (22q/35min) → Math2 (22q/35min)</strong></div>
+                <div style="font-size:.82rem;color:var(--text-secondary)">⏱ Total: <strong style="color:var(--text-primary)">2h 14min · 98 questions · Scored 400–1600</strong></div>
+              </div>
             </div>
-            <div id="fulltestHistory" style="margin-top:4px"></div>
+
+            <!-- Test Cards -->
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:24px">
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(1)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+                  <div><div style="font-weight:700">Generated Test 1</div><div style="font-size:.75rem;color:var(--text-muted)">98 questions · 4 modules · Timed</div></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-indigo">Math</span><span class="badge badge-violet">R&W</span><span class="badge badge-emerald">Adaptive</span></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(1)">Start Test →</button>
+              </div>
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(2)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#a78bfa,#22d3ee);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+                  <div><div style="font-weight:700">Generated Test 2</div><div style="font-size:.75rem;color:var(--text-muted)">98 questions · 4 modules · Timed</div></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-indigo">Math</span><span class="badge badge-violet">R&W</span><span class="badge badge-emerald">Adaptive</span></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(2)">Start Test →</button>
+              </div>
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(3)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#22d3ee,#10b981);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+                  <div><div style="font-weight:700">Generated Test 3</div><div style="font-size:.75rem;color:var(--text-muted)">98 questions · 4 modules · Timed</div></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-indigo">Math</span><span class="badge badge-violet">R&W</span><span class="badge badge-emerald">Adaptive</span></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(3)">Start Test →</button>
+              </div>
+              <div class="chart-card" style="cursor:pointer;transition:all .2s" onclick="startFullTest(4)" onmouseenter="this.style.borderColor='rgba(99,102,241,0.5)';this.style.transform='translateY(-3px)'" onmouseleave="this.style.borderColor='';this.style.transform=''">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                  <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#f59e0b,#fb7185);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0">📝</div>
+                  <div><div style="font-weight:700">Generated Test 4</div><div style="font-size:.75rem;color:var(--text-muted)">98 questions · 4 modules · Timed</div></div>
+                </div>
+                <div style="display:flex;gap:8px;margin-bottom:14px"><span class="badge badge-indigo">Math</span><span class="badge badge-violet">R&W</span><span class="badge badge-emerald">Adaptive</span></div>
+                <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="event.stopPropagation();startFullTest(4)">Start Test →</button>
+              </div>
+            </div>
+
+            <!-- Past Test Results -->
+            <div class="chart-card">
+              <div class="card-header"><h3>Your Test History</h3></div>
+              <div id="fulltestHistory" style="margin-top:4px"></div>
+            </div>
           </div>
         </div>
 
@@ -641,6 +681,21 @@
         </div>
 
         <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
+          <!-- Status filter (persisted progress) -->
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:.75rem;font-weight:600;color:var(--text-muted);min-width:68px">Study:</span>
+            <div class="filter-bar" style="margin:0">
+              <button class="filter-chip status-chip active" onclick="setStatusFilter('all',this)">All Words</button>
+              <button class="filter-chip status-chip" onclick="setStatusFilter('unseen',this)">Not Studied</button>
+              <button class="filter-chip status-chip" onclick="setStatusFilter('correct',this)" style="color:var(--emerald)">✓ Got Right</button>
+              <button class="filter-chip status-chip" onclick="setStatusFilter('incorrect',this)" style="color:var(--rose)">✕ Got Wrong</button>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="shuffleCards()">🔀 Shuffle</button>
+              <button class="btn btn-ghost btn-sm" style="color:var(--rose)" onclick="resetCardProgress()">↺ Restart Progress</button>
+            </div>
+          </div>
+          <!-- Difficulty filter -->
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:.75rem;font-weight:600;color:var(--text-muted);min-width:68px">Difficulty:</span>
             <div class="filter-bar" style="margin:0">
@@ -650,6 +705,7 @@
               <button class="filter-chip diff-chip" onclick="setDiffFilter('hard',this)">Hard</button>
             </div>
           </div>
+          <!-- Letter filter -->
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <span style="font-size:.75rem;font-weight:600;color:var(--text-muted);min-width:68px">Letter:</span>
             <div class="filter-bar" style="margin:0">
@@ -670,9 +726,6 @@
               <option value="v">V</option><option value="w">W</option><option value="x">X</option>
               <option value="y">Y</option><option value="z">Z</option>
             </select>
-            <div style="flex:1"></div>
-            <button class="btn btn-secondary btn-sm" onclick="shuffleCards()">🔀 Shuffle</button>
-            <button class="btn btn-ghost btn-sm" onclick="resetCards()">↺ Reset</button>
           </div>
         </div>
 
@@ -707,10 +760,10 @@
             <button class="btn btn-ghost" onclick="nextCard()">Next →</button>
             <button class="btn btn-secondary" style="background:rgba(16,185,129,0.15);border-color:rgba(16,185,129,0.3);color:#10b981" onclick="markCard('easy')">✓ Got It</button>
           </div>
-          <div style="display:flex;gap:24px;margin-top:8px;font-size:.8rem;color:var(--text-muted)">
-            <span>✓ Got it: <strong style="color:var(--emerald)" id="gotItCount">0</strong></span>
-            <span>✕ Hard: <strong style="color:var(--rose)" id="hardCount">0</strong></span>
-            <span>Remaining: <strong id="remainingCount">—</strong></span>
+          <div style="display:flex;gap:20px;margin-top:8px;font-size:.8rem;color:var(--text-muted);flex-wrap:wrap">
+            <span>✓ Got right (all time): <strong style="color:var(--emerald)" id="gotItCount">0</strong></span>
+            <span>✕ Got wrong (all time): <strong style="color:var(--rose)" id="hardCount">0</strong></span>
+            <span>In current filter: <strong id="remainingCount">—</strong></span>
           </div>
         </div>
       </section>
@@ -787,26 +840,26 @@
         </div>
 
         <!-- Top Metrics -->
-        <div class="grid-4" style="margin-bottom:24px">
+        <div class="grid-4" id="analyticsMetrics" style="margin-bottom:24px">
           <div class="stat-card">
             <div class="stat-label">Projected Score</div>
-            <div class="stat-value gradient-text">1340</div>
-            <div class="stat-change">At current pace</div>
+            <div class="stat-value gradient-text" id="analyticsProjected">—</div>
+            <div class="stat-change" id="analyticsProjectedSub">Complete practice to see</div>
           </div>
           <div class="stat-card">
             <div class="stat-label">All-time Accuracy</div>
-            <div class="stat-value" style="color:var(--emerald)">74%</div>
-            <div class="stat-change">↑ 12% from start</div>
+            <div class="stat-value" style="color:var(--emerald)" id="analyticsAccuracy">—</div>
+            <div class="stat-change" id="analyticsAccuracySub">No sessions yet</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Avg. Question Time</div>
-            <div class="stat-value" style="color:var(--cyan)">1:24</div>
-            <div class="stat-change">Target: under 1:30</div>
+            <div class="stat-label">Questions Answered</div>
+            <div class="stat-value" style="color:var(--cyan)" id="analyticsQCount">0</div>
+            <div class="stat-change" id="analyticsQCountSub">Start practicing!</div>
           </div>
           <div class="stat-card">
-            <div class="stat-label">Hours This Month</div>
-            <div class="stat-value" style="color:var(--violet)">18.5h</div>
-            <div class="stat-change">Goal: 20h / month</div>
+            <div class="stat-label">Sessions Completed</div>
+            <div class="stat-value" style="color:var(--violet)" id="analyticsSessions">0</div>
+            <div class="stat-change" id="analyticsSessionsSub">Goal: 1 session/day</div>
           </div>
         </div>
 

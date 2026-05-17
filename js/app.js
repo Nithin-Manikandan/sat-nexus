@@ -143,9 +143,9 @@ async function signIn() {
 /* ── Navigation ─────────────────────────────────────────────── */
 const PAGE_TITLES = {
   dashboard:   'Dashboard',
-  practice:    'Practice Tests',
+  practice:    'Practice Questions',
   fulltest:    'Full Practice Tests',
-  flashcards:  'Flashcards',
+  flashcards:  'Vocab Flashcards',
   resources:   'Resource Hub',
   videos:      'Video Library',
   analytics:   'Analytics',
@@ -195,8 +195,84 @@ function showToast(message, type = 'info', duration = 3000) {
 }
 
 /* ── Dashboard ───────────────────────────────────────────────── */
+/* ── Question of the Day ─────────────────────────────────────── */
+function initQOTD() {
+  const today = new Date();
+  const dateKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  const dateLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  // Date-seeded pick — same question all day, changes at midnight
+  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  const idx  = seed % SAT_QUESTIONS.length;
+  const q    = SAT_QUESTIONS[idx];
+
+  const el = id => document.getElementById(id);
+  if (!el('qotdText')) return;
+
+  el('qotdDate').textContent = dateLabel;
+  el('qotdText').textContent  = q.text;
+  el('qotdMeta').innerHTML = `
+    <span class="badge badge-${q.section === 'math' ? 'indigo' : 'violet'}">${q.section === 'math' ? 'Math' : 'R&W'}</span>
+    <span class="badge badge-${q.section === 'math' ? 'cyan' : 'indigo'}">${q.topic}</span>
+    <span class="difficulty-${q.difficulty}">${q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</span>
+  `;
+
+  if (q.passage) { el('qotdPassage').textContent = q.passage; el('qotdPassage').style.display = 'block'; }
+  else el('qotdPassage').style.display = 'none';
+
+  el('qotdExplanationText').textContent = q.explanation;
+
+  el('qotdChoices').innerHTML = q.choices.map((choice, i) => {
+    const letter = ['A','B','C','D'][i];
+    return `<div class="answer-choice" id="qotdChoice${letter}" onclick="selectQOTD('${letter}','${q.answer}')">
+      <div class="choice-letter">${letter}</div>
+      <div class="choice-text">${choice.substring(3)}</div>
+    </div>`;
+  }).join('');
+
+  // Check if already answered today
+  const saved = localStorage.getItem('sat_nexus_qotd');
+  if (saved) {
+    try {
+      const s = JSON.parse(saved);
+      if (s.dateKey === dateKey && s.chosen) {
+        revealQOTDResult(s.chosen, q.answer);
+      }
+    } catch {}
+  }
+}
+
+function selectQOTD(chosen, correct) {
+  const today = new Date();
+  const dateKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
+  localStorage.setItem('sat_nexus_qotd', JSON.stringify({ dateKey, chosen }));
+  revealQOTDResult(chosen, correct);
+}
+
+function revealQOTDResult(chosen, correct) {
+  ['A','B','C','D'].forEach(l => {
+    const el = document.getElementById('qotdChoice' + l);
+    if (!el) return;
+    el.onclick = null;
+    if (l === correct) el.classList.add('correct');
+    else if (l === chosen && l !== correct) el.classList.add('incorrect');
+  });
+  const expEl = document.getElementById('qotdExplanation');
+  if (expEl) expEl.style.display = '';
+  const btn = document.getElementById('qotdRevealBtn');
+  if (btn) btn.style.display = 'none';
+}
+
+function revealQOTD() {
+  // Called when "See Answer" clicked without selecting
+  const seed = new Date().getFullYear() * 10000 + (new Date().getMonth() + 1) * 100 + new Date().getDate();
+  const q = SAT_QUESTIONS[seed % SAT_QUESTIONS.length];
+  selectQOTD(null, q.answer);
+}
+
 function initDashboard() {
   updateSidebarUser();
+  initQOTD();
   if (!USER.questionsAnswered || USER.questionsAnswered === 0) {
     renderEmptyDashboard();
   } else {
@@ -551,6 +627,22 @@ let analyticsScoreChart, analyticsAccChart;
 function initAnalyticsCharts() {
   const sessions = JSON.parse(localStorage.getItem('sat_nexus_sessions') || '[]');
   const mastery = USER?.topicMastery || {};
+
+  // Populate top metric cards with real data
+  const totalQ    = sessions.reduce((a,s) => a + s.total, 0);
+  const totalC    = sessions.reduce((a,s) => a + s.correct, 0);
+  const accuracy  = totalQ > 0 ? Math.round(totalC / totalQ * 100) : null;
+  const projected = accuracy !== null ? Math.round(400 + (accuracy / 100) * 1200) : null;
+
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('analyticsProjected',     projected !== null ? projected.toString() : '—');
+  set('analyticsProjectedSub',  projected !== null ? 'Based on practice accuracy' : 'Complete practice to see');
+  set('analyticsAccuracy',      accuracy !== null ? accuracy + '%' : '—');
+  set('analyticsAccuracySub',   accuracy !== null ? `${totalC}/${totalQ} correct overall` : 'No sessions yet');
+  set('analyticsQCount',        totalQ.toString());
+  set('analyticsQCountSub',     totalQ > 0 ? `Across ${sessions.length} session${sessions.length !== 1 ? 's' : ''}` : 'Start practicing!');
+  set('analyticsSessions',      sessions.length.toString());
+  set('analyticsSessionsSub',   sessions.length >= 7 ? 'Great consistency!' : sessions.length > 0 ? 'Keep it up!' : 'Goal: 1 session/day');
 
   const scoreCtx = document.getElementById('analyticsScoreChart');
   if (scoreCtx) {
@@ -915,17 +1007,43 @@ function rotateTip() {
 }
 
 /* ── Flashcards ──────────────────────────────────────────────── */
-let cardState = { cards: [...SAT_FLASHCARDS], current: 0, flipped: false, gotIt: 0, hard: 0 };
+const FC_PROGRESS_KEY = 'sat_nexus_flashcard_progress';
+
+let cardState = { cards: [...SAT_FLASHCARDS], current: 0, flipped: false };
 
 function getWordDifficulty(word) {
   const l = word.length;
   return l <= 6 ? 'easy' : l <= 9 ? 'medium' : 'hard';
 }
 
+function loadCardProgress() {
+  try { return JSON.parse(localStorage.getItem(FC_PROGRESS_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveCardProgress(word, status) {
+  const p = loadCardProgress();
+  p[word] = status;
+  localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(p));
+}
+
+function getCardProgressCounts() {
+  const p = loadCardProgress();
+  const vals = Object.values(p);
+  return {
+    correct:   vals.filter(v => v === 'correct').length,
+    incorrect: vals.filter(v => v === 'incorrect').length
+  };
+}
+
 function renderCard() {
   const card = cardState.cards[cardState.current];
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
   const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+  // Always update the all-time counts
+  const counts = getCardProgressCounts();
+  set('gotItCount', counts.correct);
+  set('hardCount',  counts.incorrect);
 
   if (!card) {
     set('flashcardCounter', 'No cards match — try a different filter');
@@ -939,52 +1057,66 @@ function renderCard() {
   set('cardExample', `"${card.example}"`);
 
   const diff = getWordDifficulty(card.word);
-  setHTML('cardDifficulty', `<span class="difficulty-${diff}">${diff.charAt(0).toUpperCase()+diff.slice(1)}</span>`);
+  const prog = loadCardProgress();
+  const wordStatus = prog[card.word];
+  const statusBadge = wordStatus === 'correct'
+    ? `<span style="background:rgba(16,185,129,0.15);color:var(--emerald);padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:600;margin-left:8px">✓ Known</span>`
+    : wordStatus === 'incorrect'
+      ? `<span style="background:rgba(251,113,133,0.15);color:var(--rose);padding:2px 8px;border-radius:6px;font-size:.7rem;font-weight:600;margin-left:8px">✕ Review</span>`
+      : '';
+  setHTML('cardDifficulty', `<span class="difficulty-${diff}">${diff.charAt(0).toUpperCase()+diff.slice(1)}</span>${statusBadge}`);
 
   set('flashcardCounter', `Card ${cardState.current + 1} of ${cardState.cards.length}`);
   const lbl = document.getElementById('flashcardTotalLabel');
   if (lbl) lbl.textContent = SAT_FLASHCARDS.length.toLocaleString();
-  const prog = document.getElementById('flashcardProgress');
-  if (prog) prog.style.width = `${((cardState.current + 1) / cardState.cards.length) * 100}%`;
+  const progBar = document.getElementById('flashcardProgress');
+  if (progBar) progBar.style.width = `${((cardState.current + 1) / cardState.cards.length) * 100}%`;
   const fc = document.getElementById('flashcard');
   if (fc) { cardState.flipped = false; fc.classList.remove('flipped'); }
-  set('gotItCount', cardState.gotIt);
-  set('hardCount', cardState.hard);
-  set('remainingCount', cardState.cards.length - cardState.current);
+  set('remainingCount', cardState.cards.length);
 }
 
 function flipCard()  { cardState.flipped = !cardState.flipped; document.getElementById('flashcard').classList.toggle('flipped', cardState.flipped); }
 
 function nextCard() {
   if (cardState.current < cardState.cards.length - 1) { cardState.current++; renderCard(); }
-  else { showToast('End of deck! Starting over.', 'info'); cardState.current = 0; cardState.cards.sort(() => Math.random() - 0.5); renderCard(); }
+  else { showToast('End of deck!', 'info'); cardState.current = 0; renderCard(); }
 }
 
 function prevCard() { if (cardState.current > 0) { cardState.current--; renderCard(); } }
 
 function markCard(status) {
-  if (status === 'easy') { cardState.gotIt++; showToast(`"${cardState.cards[cardState.current].word}" — got it!`, 'success', 1500); }
-  else cardState.hard++;
+  const card = cardState.cards[cardState.current];
+  if (!card) return;
+  saveCardProgress(card.word, status === 'easy' ? 'correct' : 'incorrect');
+  if (status === 'easy') showToast(`✓ Marked "${card.word}" as known`, 'success', 1200);
+  else showToast(`✕ Marked "${card.word}" for review`, 'info', 1200);
   nextCard();
 }
 
 function shuffleCards() { cardState.cards.sort(() => Math.random() - 0.5); cardState.current = 0; renderCard(); showToast('Cards shuffled!', 'info', 1500); }
-function resetCards()   {
-  cardFilter.difficulty = 'all'; cardFilter.letter = 'all';
-  document.querySelectorAll('.diff-chip').forEach(c => c.classList.toggle('active', c.textContent === 'All'));
-  document.querySelectorAll('.letter-chip').forEach(c => c.classList.toggle('active', c.textContent === 'All'));
-  const sel = document.getElementById('letterSelect'); if (sel) sel.value = 'all';
-  cardState.cards = [...SAT_FLASHCARDS]; cardState.current = 0; cardState.gotIt = 0; cardState.hard = 0; renderCard();
+
+function resetCardProgress() {
+  if (!confirm('Reset ALL flashcard progress? Your "Got Right" and "Got Wrong" history will be cleared.')) return;
+  localStorage.removeItem(FC_PROGRESS_KEY);
+  showToast('Flashcard progress reset!', 'info');
+  renderCard();
 }
 
-let cardFilter = { difficulty: 'all', letter: 'all' };
+let cardFilter = { difficulty: 'all', letter: 'all', status: 'all' };
 
 function applyCardFilter() {
   const letterRanges = { 'a-h': ['a','h'], 'i-p': ['i','p'], 'q-z': ['q','z'] };
+  const progress = loadCardProgress();
   cardState.cards = SAT_FLASHCARDS.filter(c => {
-    const diff = getWordDifficulty(c.word);
+    const diff  = getWordDifficulty(c.word);
     const first = c.word[0].toLowerCase();
-    const diffOk = cardFilter.difficulty === 'all' || diff === cardFilter.difficulty;
+    const wStatus = progress[c.word] || 'unseen';
+    const diffOk   = cardFilter.difficulty === 'all' || diff === cardFilter.difficulty;
+    const statusOk = cardFilter.status === 'all'
+      || (cardFilter.status === 'unseen'    && wStatus === 'unseen')
+      || (cardFilter.status === 'correct'   && wStatus === 'correct')
+      || (cardFilter.status === 'incorrect' && wStatus === 'incorrect');
     let letterOk = true;
     if (cardFilter.letter !== 'all') {
       if (letterRanges[cardFilter.letter]) {
@@ -994,11 +1126,18 @@ function applyCardFilter() {
         letterOk = first === cardFilter.letter;
       }
     }
-    return diffOk && letterOk;
+    return diffOk && statusOk && letterOk;
   });
   cardState.current = 0;
   renderCard();
   showToast(`Showing ${cardState.cards.length} word${cardState.cards.length !== 1 ? 's' : ''}`, 'info', 1200);
+}
+
+function setStatusFilter(status, btn) {
+  document.querySelectorAll('.status-chip').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  cardFilter.status = status;
+  applyCardFilter();
 }
 
 function setDiffFilter(diff, btn) {
@@ -1086,7 +1225,26 @@ function initFullTestPage() {
   document.getElementById('fulltestHub').style.display = '';
   document.getElementById('fulltestActive').style.display = 'none';
   document.getElementById('fulltestReport').style.display = 'none';
+  showFTTab('official');
   renderFTHistory();
+}
+
+function showFTTab(tab) {
+  const isOfficial = tab === 'official';
+  const offBtn  = document.getElementById('ftTabOfficial');
+  const genBtn  = document.getElementById('ftTabGenerated');
+  const offPanel = document.getElementById('ftPanelOfficial');
+  const genPanel = document.getElementById('ftPanelGenerated');
+  if (offPanel) offPanel.style.display = isOfficial ? '' : 'none';
+  if (genPanel) genPanel.style.display = isOfficial ? 'none' : '';
+  if (offBtn) {
+    offBtn.style.background = isOfficial ? 'linear-gradient(135deg,var(--indigo),var(--violet))' : 'transparent';
+    offBtn.style.color      = isOfficial ? '#fff' : 'var(--text-secondary)';
+  }
+  if (genBtn) {
+    genBtn.style.background = isOfficial ? 'transparent' : 'linear-gradient(135deg,var(--indigo),var(--violet))';
+    genBtn.style.color      = isOfficial ? 'var(--text-secondary)' : '#fff';
+  }
 }
 
 function renderFTHistory() {
