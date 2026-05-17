@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirming your account — SAT Nexus</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #03030f;
+      --surface:   rgba(255,255,255,0.04);
+      --border:    rgba(255,255,255,0.08);
+      --indigo:    #6366f1;
+      --violet:    #a78bfa;
+      --cyan:      #22d3ee;
+      --emerald:   #10b981;
+      --rose:      #fb7185;
+      --text:      #f1f5f9;
+      --muted:     #64748b;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* Ambient orbs */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: .25;
+      pointer-events: none;
+      animation: drift 8s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 500px; height: 500px; background: var(--indigo); top: -150px; left: -150px; }
+    .orb-2 { width: 400px; height: 400px; background: var(--violet); bottom: -100px; right: -100px; animation-delay: -3s; }
+    .orb-3 { width: 300px; height: 300px; background: var(--cyan);   top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -5s; }
+    @keyframes drift { from { transform: translate(0,0) scale(1); } to { transform: translate(20px,20px) scale(1.05); } }
+
+    .card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 56px 48px;
+      width: 100%;
+      max-width: 460px;
+      margin: 24px;
+      text-align: center;
+      backdrop-filter: blur(24px);
+      box-shadow: 0 32px 80px rgba(0,0,0,.5);
+    }
+
+    /* Logo */
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: 40px;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--indigo), var(--violet));
+      border-radius: 10px;
+      display: grid; place-items: center;
+      font-size: 1rem;
+    }
+
+    /* States */
+    .state { display: none; flex-direction: column; align-items: center; gap: 16px; }
+    .state.active { display: flex; }
+
+    /* Icon circle */
+    .icon-wrap {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    .icon-loading { background: rgba(99,102,241,.15); border: 2px solid rgba(99,102,241,.3); }
+    .icon-success { background: rgba(16,185,129,.15); border: 2px solid rgba(16,185,129,.3); animation: pop .4s cubic-bezier(.34,1.56,.64,1); }
+    .icon-error   { background: rgba(251,113,133,.15); border: 2px solid rgba(251,113,133,.3); animation: pop .4s cubic-bezier(.34,1.56,.64,1); }
+
+    @keyframes pop { from { transform: scale(.5); opacity:0; } to { transform: scale(1); opacity:1; } }
+
+    /* Spinner */
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(99,102,241,.2);
+      border-top-color: var(--indigo);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -.02em; }
+    p  { font-size: .95rem; color: var(--muted); line-height: 1.6; max-width: 320px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 13px 28px;
+      border-radius: 12px;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: opacity .15s, transform .15s;
+      margin-top: 8px;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--indigo), var(--violet)); color: #fff; }
+    .btn-ghost   { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="card">
+    <a href="index.html" class="logo">
+      <div class="logo-icon">🎯</div>
+      SAT Nexus
+    </a>
+
+    <!-- Loading -->
+    <div class="state active" id="stateLoading">
+      <div class="icon-wrap icon-loading">
+        <div class="spinner"></div>
+      </div>
+      <h1>Confirming your account…</h1>
+      <p>Hang tight, this only takes a second.</p>
+    </div>
+
+    <!-- Success -->
+    <div class="state" id="stateSuccess">
+      <div class="icon-wrap icon-success">✓</div>
+      <h1>You're all set!</h1>
+      <p>Your email has been confirmed. Welcome to SAT Nexus — let's get your score up.</p>
+      <a href="app.html" class="btn btn-primary">
+        Go to Dashboard
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- Error -->
+    <div class="state" id="stateError">
+      <div class="icon-wrap icon-error">✕</div>
+      <h1>Link expired</h1>
+      <p id="errorMsg">This confirmation link has expired or already been used. Request a new one from the app.</p>
+      <a href="app.html" class="btn btn-ghost">Back to app</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ── Supabase config (filled in when keys are provided) ──
+    const SUPABASE_URL = 'https://oybnhgpkoqpczfvpxmmx.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_1xIjUk6Xmm-HXgpsqaz_CA_DRW5EzY6';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    function show(id) {
+      ['stateLoading','stateSuccess','stateError'].forEach(s => {
+        document.getElementById(s).classList.toggle('active', s === id);
+      });
+    }
+
+    async function handleConfirmation() {
+      try {
+        // Supabase puts the token in the URL hash or query params
+        const { data, error } = await sb.auth.getSession();
+
+        if (error) throw error;
+
+        if (data.session) {
+          show('stateSuccess');
+        } else {
+          // Exchange the token from the URL
+          const hash = new URLSearchParams(window.location.hash.replace('#',''));
+          const query = new URLSearchParams(window.location.search);
+          const token = hash.get('access_token') || query.get('token');
+          const type  = hash.get('type') || query.get('type');
+
+          if (token && type === 'signup') {
+            const { error: verifyErr } = await sb.auth.verifyOtp({
+              token_hash: query.get('token_hash') || token,
+              type: 'email'
+            });
+            if (verifyErr) throw verifyErr;
+            show('stateSuccess');
+          } else {
+            throw new Error('No confirmation token found in URL.');
+          }
+        }
+      } catch (err) {
+        document.getElementById('errorMsg').textContent =
+          err.message || 'This confirmation link has expired or already been used.';
+        show('stateError');
+      }
+    }
+
+    handleConfirmation();
+  </script>
+</body>
+</html>

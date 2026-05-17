@@ -2,6 +2,11 @@
    SAT NEXUS — Application Logic
    ============================================================ */
 
+/* ── Supabase ─────────────────────────────────────────────────── */
+const SUPABASE_URL = 'https://oybnhgpkoqpczfvpxmmx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_1xIjUk6Xmm-HXgpsqaz_CA_DRW5EzY6';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 /* ── User State ──────────────────────────────────────────────── */
 let USER = null; // null until onboarding complete
 
@@ -30,6 +35,16 @@ function hideOnboarding() {
   document.getElementById('onboardingOverlay').classList.remove('active');
 }
 
+function showOnboardTab(tab) {
+  const isSignup = tab === 'signup';
+  document.getElementById('panelSignup').style.display = isSignup ? '' : 'none';
+  document.getElementById('panelSignin').style.display = isSignup ? 'none' : '';
+  document.getElementById('tabSignup').style.background = isSignup ? 'var(--gradient-brand)' : 'transparent';
+  document.getElementById('tabSignup').style.color      = isSignup ? '#fff' : 'var(--text-secondary)';
+  document.getElementById('tabSignin').style.background = isSignup ? 'transparent' : 'var(--gradient-brand)';
+  document.getElementById('tabSignin').style.color      = isSignup ? 'var(--text-secondary)' : '#fff';
+}
+
 function continueAsGuest() {
   saveUser({
     mode: 'guest', name: 'Guest',
@@ -41,18 +56,85 @@ function continueAsGuest() {
   initApp();
 }
 
-function createAccount() {
-  const name = document.getElementById('onboardName').value.trim() || 'Student';
+async function createAccount() {
+  const name    = document.getElementById('onboardName').value.trim() || 'Student';
+  const email   = document.getElementById('onboardEmail').value.trim();
+  const pass    = document.getElementById('onboardPassword').value;
   const current = parseInt(document.getElementById('onboardCurrent').value) || null;
   const target  = parseInt(document.getElementById('onboardTarget').value)  || null;
   const date    = document.getElementById('onboardDate').value || null;
 
+  if (!email) { showToast('Please enter your email', 'error'); return; }
+  if (pass.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
+
+  const btn = document.getElementById('btnSignup');
+  btn.textContent = 'Creating account…'; btn.disabled = true;
+
+  const { data, error } = await sb.auth.signUp({
+    email, password: pass,
+    options: {
+      data: { name },
+      emailRedirectTo: `${window.location.origin}/confirm.html`
+    }
+  });
+
+  btn.textContent = 'Create Account →'; btn.disabled = false;
+
+  if (error) { showToast(error.message, 'error'); return; }
+
+  if (data.user) {
+    await sb.from('profiles').upsert({
+      id: data.user.id, name,
+      current_score: current, target_score: target, test_date: date
+    });
+  }
+
+  // Show "check your email" screen
+  document.getElementById('onboardForm').innerHTML = `
+    <div style="text-align:center;padding:16px 0">
+      <div style="font-size:3.5rem;margin-bottom:20px">📬</div>
+      <h2 style="font-size:1.25rem;margin-bottom:10px">Check your email</h2>
+      <p style="color:var(--text-secondary);font-size:.87rem;line-height:1.7;margin-bottom:6px">
+        We sent a confirmation link to<br>
+        <strong style="color:var(--text-primary)">${email}</strong>
+      </p>
+      <p style="color:var(--text-muted);font-size:.8rem;margin-bottom:28px">
+        Click the link in that email to activate your account.<br>Check your spam folder if you don't see it.
+      </p>
+      <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:.82rem" onclick="continueAsGuest()">
+        Continue as Guest for now
+      </button>
+    </div>`;
+}
+
+async function signIn() {
+  const email = document.getElementById('signinEmail').value.trim();
+  const pass  = document.getElementById('signinPassword').value;
+
+  if (!email || !pass) { showToast('Please enter email and password', 'error'); return; }
+
+  const btn = document.getElementById('btnSignin');
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+  btn.textContent = 'Sign In →'; btn.disabled = false;
+
+  if (error) { showToast(error.message, 'error'); return; }
+
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
   saveUser({
-    mode: 'account', name,
-    currentScore: current, targetScore: target, testDate: date,
-    streak: 0, studyTime: 0, questionsAnswered: 0,
-    accuracy: null, testsCompleted: 0,
-    topicMastery: {}
+    mode: 'account',
+    name: profile?.name || data.user.user_metadata?.name || 'Student',
+    currentScore:      profile?.current_score   ?? null,
+    targetScore:       profile?.target_score    ?? null,
+    testDate:          profile?.test_date        ?? null,
+    streak:            profile?.streak          ?? 0,
+    studyTime:         profile?.study_time      ?? 0,
+    questionsAnswered: profile?.questions_answered ?? 0,
+    accuracy:          profile?.accuracy        ?? null,
+    testsCompleted:    profile?.tests_completed ?? 0,
+    topicMastery:      profile?.topic_mastery   ?? {}
   });
   hideOnboarding();
   initApp();
@@ -1217,10 +1299,12 @@ function resetAllProgress() {
   navigateTo('dashboard');
 }
 
-function signOut() {
+async function signOut() {
+  await sb.auth.signOut();
   localStorage.removeItem('sat_nexus_user');
   localStorage.removeItem('sat_nexus_sessions');
-  location.reload();
+  USER = null;
+  showOnboarding();
 }
 
 /* ── Init ────────────────────────────────────────────────────── */
@@ -1237,14 +1321,34 @@ function initApp() {
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  USER = loadUser();
-  if (!USER) {
-    continueAsGuest();
-  } else {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Check for an active Supabase session first (returning logged-in user)
+  const { data: { session } } = await sb.auth.getSession();
+
+  if (session) {
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
+    saveUser({
+      mode: 'account',
+      name:              profile?.name              ?? session.user.user_metadata?.name ?? 'Student',
+      currentScore:      profile?.current_score     ?? null,
+      targetScore:       profile?.target_score      ?? null,
+      testDate:          profile?.test_date         ?? null,
+      streak:            profile?.streak            ?? 0,
+      studyTime:         profile?.study_time        ?? 0,
+      questionsAnswered: profile?.questions_answered ?? 0,
+      accuracy:          profile?.accuracy          ?? null,
+      testsCompleted:    profile?.tests_completed   ?? 0,
+      topicMastery:      profile?.topic_mastery     ?? {}
+    });
     initApp();
-    if (!isGuest() && USER.streak === 0 && JSON.parse(localStorage.getItem('sat_nexus_sessions')||'[]').length > 0) {
-      showToast(`Welcome back, ${USER.name}!`, 'info', 3000);
+    showToast(`Welcome back, ${USER.name}!`, 'info', 3000);
+  } else {
+    // Fall back to local user (guest) or show onboarding
+    USER = loadUser();
+    if (USER) {
+      initApp();
+    } else {
+      showOnboarding();
     }
   }
 });
