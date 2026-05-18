@@ -123,9 +123,15 @@ async function signIn() {
   if (error) { showToast(error.message, 'error'); return; }
 
   const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
+  if (profile?.avatar) localStorage.setItem('sat_nexus_avatar', profile.avatar);
+  if (profile?.flashcard_progress) {
+    fcProgressCache = profile.flashcard_progress;
+    localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(fcProgressCache));
+  }
   saveUser({
     mode: 'account',
     name: profile?.name || data.user.user_metadata?.name || 'Student',
+    avatar:            profile?.avatar           ?? null,
     currentScore:      profile?.current_score   ?? null,
     targetScore:       profile?.target_score    ?? null,
     testDate:          profile?.test_date        ?? null,
@@ -171,7 +177,7 @@ function navigateTo(page) {
   if (page === 'formulas')    renderFormulas();
   if (page === 'leaderboard') renderLeaderboard();
   if (page === 'roadmap')     initRoadmapDefaults();
-  if (page === 'flashcards')  renderCard();
+  if (page === 'flashcards')  initFlashcardProgress().then(() => { applyCardFilter(); });
   if (page === 'fulltest')    initFullTestPage();
 }
 
@@ -197,77 +203,11 @@ function showToast(message, type = 'info', duration = 3000) {
 /* ── Dashboard ───────────────────────────────────────────────── */
 /* ── Question of the Day ─────────────────────────────────────── */
 function initQOTD() {
-  const today = new Date();
-  const dateKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-  const dateLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-  // Date-seeded pick — same question all day, changes at midnight
-  const seed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
-  const idx  = seed % SAT_QUESTIONS.length;
-  const q    = SAT_QUESTIONS[idx];
-
   const el = id => document.getElementById(id);
-  if (!el('qotdText')) return;
-
-  el('qotdDate').textContent = dateLabel;
-  el('qotdText').textContent  = q.text;
-  el('qotdMeta').innerHTML = `
-    <span class="badge badge-${q.section === 'math' ? 'indigo' : 'violet'}">${q.section === 'math' ? 'Math' : 'R&W'}</span>
-    <span class="badge badge-${q.section === 'math' ? 'cyan' : 'indigo'}">${q.topic}</span>
-    <span class="difficulty-${q.difficulty}">${q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</span>
-  `;
-
-  if (q.passage) { el('qotdPassage').textContent = q.passage; el('qotdPassage').style.display = 'block'; }
-  else el('qotdPassage').style.display = 'none';
-
-  el('qotdExplanationText').textContent = q.explanation;
-
-  el('qotdChoices').innerHTML = q.choices.map((choice, i) => {
-    const letter = ['A','B','C','D'][i];
-    return `<div class="answer-choice" id="qotdChoice${letter}" onclick="selectQOTD('${letter}','${q.answer}')">
-      <div class="choice-letter">${letter}</div>
-      <div class="choice-text">${choice.substring(3)}</div>
-    </div>`;
-  }).join('');
-
-  // Check if already answered today
-  const saved = localStorage.getItem('sat_nexus_qotd');
-  if (saved) {
-    try {
-      const s = JSON.parse(saved);
-      if (s.dateKey === dateKey && s.chosen) {
-        revealQOTDResult(s.chosen, q.answer);
-      }
-    } catch {}
-  }
-}
-
-function selectQOTD(chosen, correct) {
+  if (!el('qotdDate')) return;
   const today = new Date();
-  const dateKey = `${today.getFullYear()}-${today.getMonth()}-${today.getDate()}`;
-  localStorage.setItem('sat_nexus_qotd', JSON.stringify({ dateKey, chosen }));
-  revealQOTDResult(chosen, correct);
-}
-
-function revealQOTDResult(chosen, correct) {
-  ['A','B','C','D'].forEach(l => {
-    const el = document.getElementById('qotdChoice' + l);
-    if (!el) return;
-    el.onclick = null;
-    if (l === correct) el.classList.add('correct');
-    else if (l === chosen && l !== correct) el.classList.add('incorrect');
-  });
-  const expEl = document.getElementById('qotdExplanation');
-  if (expEl) expEl.style.display = '';
-  const btn = document.getElementById('qotdRevealBtn');
-  if (btn) btn.style.display = 'none';
-}
-
-function revealQOTD() {
-  // Called when "See Answer" clicked without selecting
-  const seed = new Date().getFullYear() * 10000 + (new Date().getMonth() + 1) * 100 + new Date().getDate();
-  const q = SAT_QUESTIONS[seed % SAT_QUESTIONS.length];
-  selectQOTD(null, q.answer);
+  const dateLabel = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  el('qotdDate').textContent = dateLabel;
 }
 
 function initDashboard() {
@@ -287,9 +227,55 @@ function updateSidebarUser() {
   const avatarEl = document.querySelector('.user-avatar');
   if (nameEl) nameEl.textContent = USER.name;
   if (scoreEl) scoreEl.textContent = USER.currentScore ? `Est. Score: ${USER.currentScore}` : 'No score yet';
-  if (avatarEl) avatarEl.textContent = USER.name.slice(0,2).toUpperCase();
+  if (avatarEl) {
+    const saved = USER.avatar || localStorage.getItem('sat_nexus_avatar');
+    avatarEl.innerHTML = saved && saved.length <= 4 ? `<span style="font-size:1.4rem">${saved}</span>` : USER.name.slice(0,2).toUpperCase();
+    avatarEl.style.cursor = 'pointer';
+    avatarEl.title = 'Change avatar';
+    avatarEl.onclick = showAvatarPicker;
+  }
   const streakEl = document.querySelector('.streak-number');
   if (streakEl) streakEl.textContent = `🔥 ${USER.streak}`;
+}
+
+const AVATAR_OPTIONS = ['😀','🦁','🐯','🦊','🐺','🦅','🐉','⚡','🔥','🎯','🚀','💎','🌟','🎓','🏆','🧠','💪','🎸','🌊','🍀'];
+
+function showAvatarPicker() {
+  const existing = document.getElementById('avatarPickerModal');
+  if (existing) { existing.remove(); return; }
+  const modal = document.createElement('div');
+  modal.id = 'avatarPickerModal';
+  modal.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:9999;background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:24px;width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.5)';
+  modal.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="margin:0;font-size:1rem">Choose Your Avatar</h3>
+      <button onclick="document.getElementById('avatarPickerModal').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.2rem">✕</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px">
+      ${AVATAR_OPTIONS.map(e => `<button onclick="selectAvatar('${e}')" style="background:rgba(255,255,255,0.05);border:2px solid transparent;border-radius:10px;padding:8px;font-size:1.5rem;cursor:pointer;transition:.2s" onmouseover="this.style.borderColor='var(--indigo)'" onmouseout="this.style.borderColor='transparent'">${e}</button>`).join('')}
+    </div>
+    <button onclick="selectAvatar('initials')" class="btn btn-ghost btn-sm" style="width:100%;justify-content:center">Use Initials (${USER.name.slice(0,2).toUpperCase()})</button>`;
+  const overlay = document.createElement('div');
+  overlay.id = 'avatarOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9998';
+  overlay.onclick = () => { modal.remove(); overlay.remove(); };
+  document.body.append(overlay, modal);
+}
+
+async function selectAvatar(emoji) {
+  document.getElementById('avatarPickerModal')?.remove();
+  document.getElementById('avatarOverlay')?.remove();
+  const val = emoji === 'initials' ? null : emoji;
+  USER.avatar = val;
+  localStorage.setItem('sat_nexus_avatar', val || '');
+  updateSidebarUser();
+  if (USER.mode === 'account') {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) await sb.from('profiles').upsert({ id: session.user.id, avatar: val });
+    } catch {}
+  }
+  showToast('Avatar updated!', 'success', 1500);
 }
 
 function renderEmptyDashboard() {
@@ -1008,6 +994,7 @@ function rotateTip() {
 
 /* ── Flashcards ──────────────────────────────────────────────── */
 const FC_PROGRESS_KEY = 'sat_nexus_flashcard_progress';
+let fcProgressCache = null;
 
 let cardState = { cards: [...SAT_FLASHCARDS], current: 0, flipped: false };
 
@@ -1016,14 +1003,39 @@ function getWordDifficulty(word) {
   return l <= 6 ? 'easy' : l <= 9 ? 'medium' : 'hard';
 }
 
-function loadCardProgress() {
-  try { return JSON.parse(localStorage.getItem(FC_PROGRESS_KEY) || '{}'); } catch { return {}; }
+async function initFlashcardProgress() {
+  if (fcProgressCache !== null) return;
+  if (USER.mode === 'account') {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        const { data } = await sb.from('profiles').select('flashcard_progress').eq('id', session.user.id).single();
+        if (data?.flashcard_progress && Object.keys(data.flashcard_progress).length > 0) {
+          fcProgressCache = data.flashcard_progress;
+          localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(fcProgressCache));
+          return;
+        }
+      }
+    } catch {}
+  }
+  try { fcProgressCache = JSON.parse(localStorage.getItem(FC_PROGRESS_KEY) || '{}'); } catch { fcProgressCache = {}; }
 }
 
-function saveCardProgress(word, status) {
+function loadCardProgress() {
+  return fcProgressCache || {};
+}
+
+async function saveCardProgress(word, status) {
   const p = loadCardProgress();
   p[word] = status;
+  fcProgressCache = p;
   localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(p));
+  if (USER.mode === 'account') {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) await sb.from('profiles').upsert({ id: session.user.id, flashcard_progress: p });
+    } catch {}
+  }
 }
 
 function getCardProgressCounts() {
@@ -1046,10 +1058,20 @@ function renderCard() {
   set('hardCount',  counts.incorrect);
 
   if (!card) {
-    set('flashcardCounter', 'No cards match — try a different filter');
+    set('flashcardCounter', '0 cards');
     set('remainingCount', '0');
+    const fc = document.getElementById('flashcard');
+    if (fc) fc.style.display = 'none';
+    const empty = document.getElementById('fcEmptyState');
+    if (empty) empty.style.display = 'flex';
+    const progBar = document.getElementById('flashcardProgress');
+    if (progBar) progBar.style.width = '0%';
     return;
   }
+  const fc2 = document.getElementById('flashcard');
+  if (fc2) fc2.style.display = '';
+  const empty2 = document.getElementById('fcEmptyState');
+  if (empty2) empty2.style.display = 'none';
 
   set('cardWord', card.word);
   set('cardPronunciation', card.pronunciation || '');
@@ -1085,10 +1107,10 @@ function nextCard() {
 
 function prevCard() { if (cardState.current > 0) { cardState.current--; renderCard(); } }
 
-function markCard(status) {
+async function markCard(status) {
   const card = cardState.cards[cardState.current];
   if (!card) return;
-  saveCardProgress(card.word, status === 'easy' ? 'correct' : 'incorrect');
+  await saveCardProgress(card.word, status === 'easy' ? 'correct' : 'incorrect');
   if (status === 'easy') showToast(`✓ Marked "${card.word}" as known`, 'success', 1200);
   else showToast(`✕ Marked "${card.word}" for review`, 'info', 1200);
   nextCard();
@@ -1096,11 +1118,18 @@ function markCard(status) {
 
 function shuffleCards() { cardState.cards.sort(() => Math.random() - 0.5); cardState.current = 0; renderCard(); showToast('Cards shuffled!', 'info', 1500); }
 
-function resetCardProgress() {
+async function resetCardProgress() {
   if (!confirm('Reset ALL flashcard progress? Your "Got Right" and "Got Wrong" history will be cleared.')) return;
+  fcProgressCache = {};
   localStorage.removeItem(FC_PROGRESS_KEY);
+  if (USER.mode === 'account') {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) await sb.from('profiles').upsert({ id: session.user.id, flashcard_progress: {} });
+    } catch {}
+  }
   showToast('Flashcard progress reset!', 'info');
-  renderCard();
+  applyCardFilter();
 }
 
 let cardFilter = { difficulty: 'all', letter: 'all', status: 'all' };

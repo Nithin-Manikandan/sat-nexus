@@ -220,25 +220,25 @@
           </div>
         </div>
 
-        <!-- Question of the Day -->
-        <div class="chart-card" id="qotdCard" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(99,102,241,0.08),rgba(34,211,238,0.04));border-color:rgba(99,102,241,0.25)">
-          <div class="card-header" style="margin-bottom:14px">
-            <div style="display:flex;align-items:center;gap:10px">
-              <span style="font-size:1.1rem">⚡</span>
-              <h3 style="margin:0">Question of the Day</h3>
-              <span class="badge badge-indigo" style="font-size:.65rem">DAILY CHALLENGE</span>
+        <!-- College Board Question of the Day -->
+        <div class="chart-card" id="qotdCard" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(0,68,155,0.12),rgba(99,102,241,0.06));border-color:rgba(0,68,155,0.3)">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div style="flex:1;min-width:220px">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+                <span style="font-size:1.25rem">🎯</span>
+                <h3 style="margin:0;font-size:1rem">College Board — Question of the Day</h3>
+                <span style="background:#00449b;color:#fff;font-size:.6rem;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:.05em">OFFICIAL</span>
+              </div>
+              <p style="color:var(--text-secondary);font-size:.85rem;line-height:1.6;margin:0 0 6px">Answer today's official SAT question directly on the College Board site. Both a Math and Reading &amp; Writing challenge are available daily — your answers and streaks are saved automatically when you're signed in to your College Board account.</p>
+              <span id="qotdDate" style="font-size:.75rem;color:var(--text-muted)"></span>
             </div>
-            <span id="qotdDate" style="font-size:.75rem;color:var(--text-muted)"></span>
+            <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0">
+              <a href="https://qotd.collegeboard.org" target="_blank" rel="noopener" class="btn btn-primary" style="gap:6px;white-space:nowrap">
+                Answer Today's Question <span style="font-size:.85rem">→</span>
+              </a>
+              <span style="font-size:.7rem;color:var(--text-muted)">Opens College Board's official QOTD</span>
+            </div>
           </div>
-          <div id="qotdMeta" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px"></div>
-          <div id="qotdPassage" style="background:rgba(255,255,255,0.04);border-left:3px solid var(--indigo);border-radius:0 8px 8px 0;padding:12px 14px;margin-bottom:14px;font-size:.88rem;line-height:1.75;color:var(--text-secondary);display:none"></div>
-          <div id="qotdText" style="font-size:.97rem;font-weight:500;line-height:1.65;margin-bottom:18px;color:var(--text-primary)"></div>
-          <div id="qotdChoices" style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
-          <div id="qotdExplanation" style="display:none;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:14px;margin-bottom:12px">
-            <div style="font-size:.72rem;font-weight:700;color:var(--emerald);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Explanation</div>
-            <div id="qotdExplanationText" style="font-size:.85rem;color:var(--text-secondary);line-height:1.65"></div>
-          </div>
-          <button id="qotdRevealBtn" class="btn btn-primary btn-sm" onclick="revealQOTD()">See Answer</button>
         </div>
 
         <!-- Stats Grid -->
@@ -731,6 +731,15 @@
 
         <div class="flashcard-arena">
           <div class="flashcard-counter" id="flashcardCounter">Card 1 of 1</div>
+
+          <!-- Empty state when no cards match the filter -->
+          <div id="fcEmptyState" style="display:none;flex-direction:column;align-items:center;justify-content:center;min-height:260px;padding:32px;text-align:center;background:var(--card-bg);border:1px dashed var(--border);border-radius:16px;gap:12px">
+            <span style="font-size:2.5rem">🃏</span>
+            <h3 style="margin:0;font-size:1rem;color:var(--text-primary)">No cards match this filter</h3>
+            <p style="margin:0;font-size:.85rem;color:var(--text-secondary);max-width:280px;line-height:1.6">Study some cards first, or choose a different filter to see words in that category.</p>
+            <button class="btn btn-ghost btn-sm" onclick="setStatusFilter('all', document.querySelector('.status-chip'))">Show All Cards</button>
+          </div>
+
           <div class="flashcard-wrap" id="flashcard" onclick="flipCard()">
             <div class="flashcard-inner">
               <div class="flashcard-face flashcard-front">
