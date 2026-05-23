@@ -325,52 +325,66 @@
         <div id="practiceHome">
           <div class="page-header">
             <h1>Practice Questions</h1>
-            <p>435+ SAT-style questions across every topic. Instantly scored with full explanations.</p>
+            <p>1,600+ official SAT questions across every topic. Instantly scored with full explanations.</p>
           </div>
 
-          <!-- Quick start -->
+          <!-- Filter-based Setup UI -->
           <div class="chart-card" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(129,140,248,0.08),rgba(34,211,238,0.05));border-color:var(--border-brand)">
-            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:6px">
-              <h3 style="margin:0">Quick Practice</h3>
-              <div style="display:flex;align-items:center;gap:8px">
-                <label style="font-size:.8rem;color:var(--text-muted)">Difficulty:</label>
-                <select id="difficultySelect" class="form-select" style="width:140px;padding:6px 10px;font-size:.82rem">
-                  <option value="all">All Levels</option>
-                  <option value="easy">Easy</option>
-                  <option value="medium">Medium</option>
-                  <option value="hard">Hard</option>
-                </select>
+            <h3 style="margin:0 0 20px">Build Your Session</h3>
+
+            <!-- Subject -->
+            <div style="margin-bottom:20px">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Subject</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap" id="subjectBtns">
+                <button class="btn btn-ghost btn-sm pf-subject" data-val="reading_writing" onclick="setPFSubject('reading_writing')">ELA</button>
+                <button class="btn btn-ghost btn-sm pf-subject" data-val="math" onclick="setPFSubject('math')">Math</button>
+                <button class="btn btn-primary btn-sm pf-subject active" data-val="all" onclick="setPFSubject('all')">Both</button>
               </div>
             </div>
-            <p style="font-size:.85rem;color:var(--text-secondary);margin-bottom:20px">Jump into a focused session</p>
-            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px">
-              <button class="btn btn-primary" onclick="startPractice('math','all',10)">⚡ Mixed Math · 10 Qs</button>
-              <button class="btn btn-secondary" onclick="startPractice('reading_writing','all',10)">📖 Mixed R&W · 10 Qs</button>
-              <button class="btn btn-secondary" onclick="startPractice('math','Algebra',8)">📐 Algebra · 8 Qs</button>
-              <button class="btn btn-secondary" onclick="startPractice('reading_writing','Standard English',6)">✏️ Grammar · 6 Qs</button>
-              <button class="btn btn-secondary" onclick="startPractice('all','all',22)">🎯 Full Section · 22 Qs</button>
-              <button class="btn btn-ghost" onclick="startPractice('math','Geometry',6)">📏 Geometry · 6 Qs</button>
+
+            <!-- Domain -->
+            <div style="margin-bottom:20px">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Domain</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap" id="domainBtns"></div>
+            </div>
+
+            <!-- Difficulty -->
+            <div style="margin-bottom:20px">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Difficulty</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap" id="diffBtns">
+                <button class="btn btn-primary btn-sm pf-diff active" data-val="all" onclick="setPFDiff('all')">All</button>
+                <button class="btn btn-ghost btn-sm pf-diff" data-val="easy" onclick="setPFDiff('easy')">Easy</button>
+                <button class="btn btn-ghost btn-sm pf-diff" data-val="medium" onclick="setPFDiff('medium')">Medium</button>
+                <button class="btn btn-ghost btn-sm pf-diff" data-val="hard" onclick="setPFDiff('hard')">Hard</button>
+              </div>
+            </div>
+
+            <!-- Questions count -->
+            <div style="margin-bottom:24px">
+              <div style="font-size:.78rem;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Questions</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap" id="countBtns">
+                <button class="btn btn-ghost btn-sm pf-count" data-val="5" onclick="setPFCount(5)">5</button>
+                <button class="btn btn-primary btn-sm pf-count active" data-val="10" onclick="setPFCount(10)">10</button>
+                <button class="btn btn-ghost btn-sm pf-count" data-val="15" onclick="setPFCount(15)">15</button>
+                <button class="btn btn-ghost btn-sm pf-count" data-val="20" onclick="setPFCount(20)">20</button>
+                <button class="btn btn-ghost btn-sm pf-count" data-val="30" onclick="setPFCount(30)">30</button>
+              </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button class="btn btn-primary btn-lg" style="flex:1;min-width:160px" onclick="launchPractice()">Start Practice</button>
+              <button class="btn btn-secondary btn-sm" style="align-self:center" onclick="surprisePractice()">Surprise Me</button>
             </div>
           </div>
 
-          <div class="grid-3" style="margin-bottom:24px">
-            <div class="stat-card" style="cursor:pointer" onclick="startPractice('math','all',20)">
-              <div class="stat-icon" style="background:rgba(129,140,248,0.15)">🔢</div>
-              <div class="stat-label">Math Module</div>
-              <div class="stat-value gradient-text">20 Qs</div>
-              <div class="stat-change">35 min · All math topics</div>
-            </div>
-            <div class="stat-card" style="cursor:pointer" onclick="startPractice('reading_writing','all',27)">
-              <div class="stat-icon" style="background:rgba(167,139,250,0.12)">📖</div>
-              <div class="stat-label">R&W Module</div>
-              <div class="stat-value" style="color:var(--violet)">27 Qs</div>
-              <div class="stat-change">32 min · All R&W topics</div>
-            </div>
-            <div class="stat-card" style="cursor:pointer" onclick="startPractice('all','all',27)">
-              <div class="stat-icon" style="background:rgba(34,211,238,0.12)">📝</div>
-              <div class="stat-label">Full Section Sim</div>
-              <div class="stat-value" style="color:var(--cyan)">27 Qs</div>
-              <div class="stat-change">Full timed experience</div>
+          <!-- Quick Launch -->
+          <div class="chart-card" style="margin-bottom:24px">
+            <div class="card-header"><h3>Quick Launch</h3></div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px">
+              <button class="btn btn-secondary" onclick="startPractice('reading_writing','all',10)">Random ELA · 10Q</button>
+              <button class="btn btn-secondary" onclick="startPractice('math','all',10)">Random Math · 10Q</button>
+              <button class="btn btn-secondary" onclick="startPractice('all','all',22)">Full Section · 22Q</button>
             </div>
           </div>
 

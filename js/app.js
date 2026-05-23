@@ -179,6 +179,7 @@ function navigateTo(page) {
   if (page === 'roadmap')     initRoadmapDefaults();
   if (page === 'flashcards')  initFlashcardProgress().then(() => { applyCardFilter(); });
   if (page === 'fulltest')    initFullTestPage();
+  if (page === 'practice')    renderDomainChips();
 }
 
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -738,8 +739,87 @@ const TIPS = [
   'For hard math, plug the answer choices back into the question to check your work.'
 ];
 
-function startPractice(section, topic, numQuestions) {
-  const diff = document.getElementById('difficultySelect')?.value || 'all';
+/* ── Practice Filter State ──────────────────────────────────── */
+const PF_DOMAINS = {
+  reading_writing: ['all', 'Information & Ideas', 'Craft & Structure', 'Expression of Ideas', 'Standard English Conventions'],
+  math: ['all', 'Algebra', 'Advanced Math', 'Problem Solving & Data Analysis', 'Geometry & Trigonometry'],
+  all: ['all']
+};
+
+let pfState = { subject: 'all', domain: 'all', difficulty: 'all', count: 10 };
+
+function setPFSubject(val) {
+  pfState.subject = val;
+  pfState.domain = 'all';
+  document.querySelectorAll('.pf-subject').forEach(b => {
+    b.classList.toggle('btn-primary', b.dataset.val === val);
+    b.classList.toggle('btn-ghost', b.dataset.val !== val);
+    b.classList.toggle('active', b.dataset.val === val);
+  });
+  renderDomainChips();
+}
+
+function setPFDiff(val) {
+  pfState.difficulty = val;
+  document.querySelectorAll('.pf-diff').forEach(b => {
+    b.classList.toggle('btn-primary', b.dataset.val === val);
+    b.classList.toggle('btn-ghost', b.dataset.val !== val);
+    b.classList.toggle('active', b.dataset.val === val);
+  });
+}
+
+function setPFCount(val) {
+  pfState.count = val;
+  document.querySelectorAll('.pf-count').forEach(b => {
+    b.classList.toggle('btn-primary', String(b.dataset.val) === String(val));
+    b.classList.toggle('btn-ghost', String(b.dataset.val) !== String(val));
+    b.classList.toggle('active', String(b.dataset.val) === String(val));
+  });
+}
+
+function setPFDomain(val) {
+  pfState.domain = val;
+  document.querySelectorAll('.pf-domain').forEach(b => {
+    b.classList.toggle('btn-primary', b.dataset.val === val);
+    b.classList.toggle('btn-ghost', b.dataset.val !== val);
+    b.classList.toggle('active', b.dataset.val === val);
+  });
+}
+
+function renderDomainChips() {
+  const container = document.getElementById('domainBtns');
+  if (!container) return;
+  const domains = PF_DOMAINS[pfState.subject] || ['all'];
+  container.innerHTML = domains.map(d => {
+    const label = d === 'all' ? 'All Domains' : d;
+    const isActive = d === pfState.domain;
+    return `<button class="btn ${isActive ? 'btn-primary' : 'btn-ghost'} btn-sm pf-domain${isActive ? ' active' : ''}" data-val="${d}" onclick="setPFDomain('${d.replace(/'/g,"\\'")}')"> ${label}</button>`;
+  }).join('');
+}
+
+function launchPractice() {
+  startPractice(pfState.subject, pfState.domain === 'all' ? 'all' : pfState.domain, pfState.count, pfState.difficulty);
+}
+
+function surprisePractice() {
+  const subjects = ['reading_writing', 'math', 'all'];
+  const counts = [5, 10, 15, 20];
+  const diffs = ['all', 'easy', 'medium', 'hard'];
+  const randSubject = subjects[Math.floor(Math.random() * subjects.length)];
+  const randCount = counts[Math.floor(Math.random() * counts.length)];
+  const randDiff = diffs[Math.floor(Math.random() * diffs.length)];
+  const domainsForSubject = PF_DOMAINS[randSubject] || ['all'];
+  const randDomain = domainsForSubject[Math.floor(Math.random() * domainsForSubject.length)];
+
+  setPFSubject(randSubject);
+  setPFDomain(randDomain);
+  setPFDiff(randDiff);
+  setPFCount(randCount);
+  showToast(`Surprise: ${randSubject === 'all' ? 'Both' : randSubject === 'math' ? 'Math' : 'ELA'} · ${randCount}Q · ${randDiff === 'all' ? 'Any difficulty' : randDiff}`, 'info');
+}
+
+function startPractice(section, topic, numQuestions, diffOverride) {
+  const diff = diffOverride || 'all';
   practiceState.section = section;
   practiceState.topic = topic;
   practiceState.difficulty = diff;
@@ -1859,6 +1939,7 @@ function initApp() {
   initDashboard();
   renderCard();
   renderFormulas();
+  renderDomainChips();
 
   // Stagger entrance animations
   document.querySelectorAll('.stat-card').forEach((card, i) => {
