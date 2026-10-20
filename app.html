@@ -29,7 +29,7 @@
   <!-- ── Sidebar ──────────────────────────────────────────────── -->
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
-      <a href="index.html" class="logo-mark" style="display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:1rem">🎯</a>
+      <a href="app.html" class="logo-mark" style="display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:1rem">🎯</a>
       <span class="logo-text">SAT Nexus</span>
       <span class="logo-beta">BETA</span>
     </div>
@@ -167,7 +167,8 @@
             <circle cx="8" cy="8" r="3"/><path d="M8 2v1M8 13v1M2 8h1M13 8h1"/>
           </svg>
         </button>
-        <a href="index.html" class="btn btn-ghost btn-sm">← Home</a>
+        <span id="saveStatus" style="font-size:.76rem;font-weight:600;white-space:nowrap"></span>
+        <button class="btn btn-ghost btn-sm" onclick="lockSite()" title="Lock the site">🔒 Lock</button>
       </div>
     </header>
 
@@ -1132,12 +1133,11 @@
           <div class="settings-row">
             <div class="settings-row-info">
               <h4>Answer history</h4>
-              <p id="progressStatus">Every answer you give is saved on this device, and synced to your account when you're signed in.</p>
+              <p id="progressStatus">Everything you do saves automatically.</p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
               <button class="btn btn-ghost btn-sm" onclick="exportProgress()">Export</button>
               <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importProgressFile').click()">Import</button>
-              <button class="btn btn-ghost btn-sm" onclick="retryCloudSync()">Retry cloud sync</button>
               <input type="file" id="importProgressFile" accept="application/json" class="hidden" onchange="importProgress(this)" />
             </div>
           </div>
@@ -1145,7 +1145,6 @@
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="showToast('Settings saved!','success')">Save Settings</button>
           <button class="btn btn-ghost" style="color:var(--rose);border-color:rgba(251,113,133,0.3)" onclick="resetAllProgress()">Reset All Progress</button>
-          <button class="btn btn-ghost" onclick="signOut()">Sign Out</button>
           <button class="btn btn-ghost" onclick="lockSite()">Lock Site</button>
         </div>
       </section>
@@ -1154,94 +1153,33 @@
   </main>
 </div>
 
-<!-- Onboarding Overlay -->
+<!-- First-run profile setup (one owner, no accounts) -->
 <div class="modal-overlay" id="onboardingOverlay">
-  <div class="modal-box" style="max-width:820px;padding:0;overflow:hidden">
-    <div style="display:grid;grid-template-columns:1fr 1fr;min-height:480px">
-
-      <!-- Left: Branding panel -->
-      <div style="background:linear-gradient(135deg,rgba(129,140,248,0.12),rgba(34,211,238,0.06));border-right:1px solid var(--border);padding:40px 36px;display:flex;flex-direction:column;justify-content:center">
-        <div style="font-size:2.2rem;margin-bottom:12px">🎯</div>
-        <h1 style="font-size:1.6rem;margin-bottom:10px;background:var(--gradient-brand);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">SAT Nexus</h1>
-        <p style="color:var(--text-secondary);font-size:.9rem;line-height:1.65;margin-bottom:28px">Your all-in-one SAT prep hub — real College Board-style questions, smart analytics, personalized roadmaps, and more.</p>
-        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;padding:0;margin:0">
-          <li style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--text-secondary)">
-            <span style="width:22px;height:22px;border-radius:6px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>Hard Digital SAT-aligned questions
-          </li>
-          <li style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--text-secondary)">
-            <span style="width:22px;height:22px;border-radius:6px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>Personalized score tracking
-          </li>
-          <li style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--text-secondary)">
-            <span style="width:22px;height:22px;border-radius:6px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>Week-by-week study roadmap
-          </li>
-          <li style="display:flex;align-items:center;gap:10px;font-size:.82rem;color:var(--text-secondary)">
-            <span style="width:22px;height:22px;border-radius:6px;background:rgba(16,185,129,0.15);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>Curated video library &amp; resources
-          </li>
-        </ul>
-      </div>
-
-      <!-- Right: Onboarding form -->
-      <div style="padding:40px 36px;display:flex;flex-direction:column;justify-content:center;overflow-y:auto" id="onboardForm">
-
-        <!-- Tabs -->
-        <div style="display:flex;gap:4px;background:rgba(255,255,255,0.05);border-radius:10px;padding:4px;margin-bottom:24px">
-          <button id="tabSignup" onclick="showOnboardTab('signup')" style="flex:1;padding:8px;border-radius:7px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;background:var(--gradient-brand);color:#fff;transition:.2s">Create Account</button>
-          <button id="tabSignin" onclick="showOnboardTab('signin')" style="flex:1;padding:8px;border-radius:7px;border:none;cursor:pointer;font-size:.82rem;font-weight:600;background:transparent;color:var(--text-secondary);transition:.2s">Sign In</button>
-        </div>
-
-        <!-- Sign Up panel -->
-        <div id="panelSignup">
-          <div class="form-group">
-            <label class="form-label">Your Name</label>
-            <input type="text" class="form-input" id="onboardName" placeholder="e.g. Alex" autocomplete="name" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" id="onboardEmail" placeholder="you@email.com" autocomplete="email" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password <span style="color:var(--text-muted);font-weight:400">(min 6 chars)</span></label>
-            <input type="password" class="form-input" id="onboardPassword" placeholder="••••••••" autocomplete="new-password" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Current SAT Score <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
-            <input type="number" class="form-input" id="onboardCurrent" placeholder="e.g. 1150" min="400" max="1600" step="10" />
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
-            <div class="form-group" style="margin-bottom:0">
-              <label class="form-label">Target Score</label>
-              <input type="number" class="form-input" id="onboardTarget" placeholder="e.g. 1400" min="400" max="1600" step="10" />
-            </div>
-            <div class="form-group" style="margin-bottom:0">
-              <label class="form-label">Test Date</label>
-              <input type="date" class="form-input" id="onboardDate" />
-            </div>
-          </div>
-          <button id="btnSignup" class="btn btn-primary" style="width:100%;justify-content:center" onclick="createAccount()">Create Account →</button>
-        </div>
-
-        <!-- Sign In panel -->
-        <div id="panelSignin" style="display:none">
-          <div class="form-group">
-            <label class="form-label">Email</label>
-            <input type="email" class="form-input" id="signinEmail" placeholder="you@email.com" autocomplete="email" />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Password</label>
-            <input type="password" class="form-input" id="signinPassword" placeholder="••••••••" autocomplete="current-password" />
-          </div>
-          <button id="btnSignin" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:8px" onclick="signIn()">Sign In →</button>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:10px;margin:18px 0 14px">
-          <div style="flex:1;height:1px;background:var(--border)"></div>
-          <span style="font-size:.75rem;color:var(--text-muted)">or</span>
-          <div style="flex:1;height:1px;background:var(--border)"></div>
-        </div>
-        <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:.82rem" onclick="continueAsGuest()">Continue as Guest — no data saved</button>
-      </div>
-
+  <div class="modal-box" style="max-width:460px;padding:36px">
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:2.2rem;margin-bottom:8px">🎯</div>
+      <h2 style="margin-bottom:6px">Welcome to SAT Nexus</h2>
+      <p style="color:var(--text-secondary);font-size:.88rem;line-height:1.6">Set up your profile once. Everything you do after this — answers, flashcards, plans — saves automatically.</p>
     </div>
+    <div class="form-group">
+      <label class="form-label">Your Name</label>
+      <input type="text" class="form-input" id="onboardName" placeholder="e.g. Alex" autocomplete="name" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Current SAT Score <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+      <input type="number" class="form-input" id="onboardCurrent" placeholder="e.g. 1150" min="400" max="1600" step="10" />
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Target Score</label>
+        <input type="number" class="form-input" id="onboardTarget" placeholder="e.g. 1400" min="400" max="1600" step="10" />
+      </div>
+      <div class="form-group" style="margin-bottom:0">
+        <label class="form-label">Test Date</label>
+        <input type="date" class="form-input" id="onboardDate" />
+      </div>
+    </div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="finishSetup()">Get Started →</button>
   </div>
 </div>
 
@@ -1258,7 +1196,7 @@
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/store.js"></script>
 <script src="js/data.js"></script>
 <script src="js/content.js"></script>
 <script src="js/ela.js"></script>

@@ -1,5 +1,19 @@
 {
   "functions": {
-    "api/tutor.js": { "maxDuration": 45 }
-  }
+    "api/tutor.js": {
+      "maxDuration": 45
+    }
+  },
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/app.html",
+      "permanent": false
+    },
+    {
+      "source": "/index.html",
+      "destination": "/app.html",
+      "permanent": false
+    }
+  ]
 }

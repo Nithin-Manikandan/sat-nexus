@@ -2,18 +2,17 @@
    SAT NEXUS — Application Logic
    ============================================================ */
 
-/* ── Supabase ─────────────────────────────────────────────────── */
-const SUPABASE_URL = 'https://oybnhgpkoqpczfvpxmmx.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_1xIjUk6Xmm-HXgpsqaz_CA_DRW5EzY6';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 /* ── User State ──────────────────────────────────────────────── */
-let USER = null; // null until onboarding complete
+// One owner, protected by the access code. Everything saves automatically (see js/store.js).
+let USER = null; // null only until the first-run setup is finished
 
 function loadUser() {
   try {
     const stored = localStorage.getItem('sat_nexus_user');
-    return stored ? JSON.parse(stored) : null;
+    if (!stored) return null;
+    const u = JSON.parse(stored);
+    u.mode = 'owner';
+    return u;
   } catch { return null; }
 }
 
@@ -22,11 +21,7 @@ function saveUser(u) {
   localStorage.setItem('sat_nexus_user', JSON.stringify(u));
 }
 
-function isGuest() {
-  return USER && USER.mode === 'guest';
-}
-
-/* ── Onboarding ──────────────────────────────────────────────── */
+/* ── First-run setup ─────────────────────────────────────────── */
 function showOnboarding() {
   document.getElementById('onboardingOverlay').classList.add('active');
 }
@@ -35,115 +30,20 @@ function hideOnboarding() {
   document.getElementById('onboardingOverlay').classList.remove('active');
 }
 
-function showOnboardTab(tab) {
-  const isSignup = tab === 'signup';
-  document.getElementById('panelSignup').style.display = isSignup ? '' : 'none';
-  document.getElementById('panelSignin').style.display = isSignup ? 'none' : '';
-  document.getElementById('tabSignup').style.background = isSignup ? 'var(--gradient-brand)' : 'transparent';
-  document.getElementById('tabSignup').style.color      = isSignup ? '#fff' : 'var(--text-secondary)';
-  document.getElementById('tabSignin').style.background = isSignup ? 'transparent' : 'var(--gradient-brand)';
-  document.getElementById('tabSignin').style.color      = isSignup ? 'var(--text-secondary)' : '#fff';
-}
-
-function continueAsGuest() {
-  saveUser({
-    mode: 'guest', name: 'Guest',
-    currentScore: null, targetScore: null, testDate: null,
-    streak: 0, studyTime: 0, questionsAnswered: 0,
-    accuracy: null, testsCompleted: 0
-  });
-  hideOnboarding();
-  initApp();
-}
-
-async function createAccount() {
+function finishSetup() {
   const name    = document.getElementById('onboardName').value.trim() || 'Student';
-  const email   = document.getElementById('onboardEmail').value.trim();
-  const pass    = document.getElementById('onboardPassword').value;
   const current = parseInt(document.getElementById('onboardCurrent').value) || null;
   const target  = parseInt(document.getElementById('onboardTarget').value)  || null;
   const date    = document.getElementById('onboardDate').value || null;
-
-  if (!email) { showToast('Please enter your email', 'error'); return; }
-  if (pass.length < 6) { showToast('Password must be at least 6 characters', 'error'); return; }
-
-  const btn = document.getElementById('btnSignup');
-  btn.textContent = 'Creating account…'; btn.disabled = true;
-
-  const { data, error } = await sb.auth.signUp({
-    email, password: pass,
-    options: {
-      data: { name },
-      emailRedirectTo: `${window.location.origin}/confirm.html`
-    }
-  });
-
-  btn.textContent = 'Create Account →'; btn.disabled = false;
-
-  if (error) { showToast(error.message, 'error'); return; }
-
-  if (data.user) {
-    await sb.from('profiles').upsert({
-      id: data.user.id, name,
-      current_score: current, target_score: target, test_date: date
-    });
-  }
-
-  // Show "check your email" screen
-  document.getElementById('onboardForm').innerHTML = `
-    <div style="text-align:center;padding:16px 0">
-      <div style="font-size:3.5rem;margin-bottom:20px">📬</div>
-      <h2 style="font-size:1.25rem;margin-bottom:10px">Check your email</h2>
-      <p style="color:var(--text-secondary);font-size:.87rem;line-height:1.7;margin-bottom:6px">
-        We sent a confirmation link to<br>
-        <strong style="color:var(--text-primary)">${email}</strong>
-      </p>
-      <p style="color:var(--text-muted);font-size:.8rem;margin-bottom:28px">
-        Click the link in that email to activate your account.<br>Check your spam folder if you don't see it.
-      </p>
-      <button class="btn btn-ghost" style="width:100%;justify-content:center;font-size:.82rem" onclick="continueAsGuest()">
-        Continue as Guest for now
-      </button>
-    </div>`;
-}
-
-async function signIn() {
-  const email = document.getElementById('signinEmail').value.trim();
-  const pass  = document.getElementById('signinPassword').value;
-
-  if (!email || !pass) { showToast('Please enter email and password', 'error'); return; }
-
-  const btn = document.getElementById('btnSignin');
-  btn.textContent = 'Signing in…'; btn.disabled = true;
-
-  const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-
-  btn.textContent = 'Sign In →'; btn.disabled = false;
-
-  if (error) { showToast(error.message, 'error'); return; }
-
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', data.user.id).single();
-  if (profile?.avatar) localStorage.setItem('sat_nexus_avatar', profile.avatar);
-  if (profile?.flashcard_progress) {
-    fcProgressCache = profile.flashcard_progress;
-    localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(fcProgressCache));
-  }
   saveUser({
-    mode: 'account',
-    name: profile?.name || data.user.user_metadata?.name || 'Student',
-    avatar:            profile?.avatar           ?? null,
-    currentScore:      profile?.current_score   ?? null,
-    targetScore:       profile?.target_score    ?? null,
-    testDate:          profile?.test_date        ?? null,
-    streak:            profile?.streak          ?? 0,
-    studyTime:         profile?.study_time      ?? 0,
-    questionsAnswered: profile?.questions_answered ?? 0,
-    accuracy:          profile?.accuracy        ?? null,
-    testsCompleted:    profile?.tests_completed ?? 0,
-    topicMastery:      profile?.topic_mastery   ?? {}
+    mode: 'owner', name,
+    currentScore: current, targetScore: target, testDate: date,
+    streak: 0, studyTime: 0, questionsAnswered: 0,
+    accuracy: null, testsCompleted: 0, topicMastery: {}
   });
   hideOnboarding();
   initApp();
+  showToast(`Welcome, ${name}! Everything you do is saved automatically.`, 'success', 4000);
 }
 
 /* ── Navigation ─────────────────────────────────────────────── */
@@ -268,19 +168,14 @@ function showAvatarPicker() {
   document.body.append(overlay, modal);
 }
 
-async function selectAvatar(emoji) {
+function selectAvatar(emoji) {
   document.getElementById('avatarPickerModal')?.remove();
   document.getElementById('avatarOverlay')?.remove();
   const val = emoji === 'initials' ? null : emoji;
   USER.avatar = val;
   localStorage.setItem('sat_nexus_avatar', val || '');
+  saveUser(USER);
   updateSidebarUser();
-  if (USER.mode === 'account') {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) await sb.from('profiles').upsert({ id: session.user.id, avatar: val });
-    } catch {}
-  }
   showToast('Avatar updated!', 'success', 1500);
 }
 
@@ -290,7 +185,7 @@ function renderEmptyDashboard() {
 
   const hour = new Date().getHours();
   const greet = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
-  const name = USER?.name && !isGuest() ? `, ${USER.name}` : '';
+  const name = USER?.name ? `, ${USER.name}` : '';
   const greetEl = document.getElementById('dashGreeting');
   const subEl = document.getElementById('dashSubtitle');
   if (greetEl) greetEl.textContent = `${greet}${name} 👋 Let's get to work.`;
@@ -300,7 +195,7 @@ function renderEmptyDashboard() {
   if (hero) hero.innerHTML = `
     <div style="text-align:center;width:100%;padding:20px 0">
       <div style="font-size:3rem;margin-bottom:12px">🎯</div>
-      <h2 style="font-size:1.2rem;margin-bottom:8px">Welcome${USER?.name && !isGuest() ? ', ' + USER.name : ''}!</h2>
+      <h2 style="font-size:1.2rem;margin-bottom:8px">Welcome${USER?.name ? ', ' + USER.name : ''}!</h2>
       <p style="color:var(--text-secondary);margin-bottom:20px">Complete a practice session to see your estimated SAT score here.</p>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
         <button class="btn btn-primary" onclick="navigateTo('practice')">Start Practice →</button>
@@ -1187,19 +1082,6 @@ function getWordDifficulty(word) {
 
 async function initFlashcardProgress() {
   if (fcProgressCache !== null) return;
-  if (USER.mode === 'account') {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) {
-        const { data } = await sb.from('profiles').select('flashcard_progress').eq('id', session.user.id).single();
-        if (data?.flashcard_progress && Object.keys(data.flashcard_progress).length > 0) {
-          fcProgressCache = data.flashcard_progress;
-          localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(fcProgressCache));
-          return;
-        }
-      }
-    } catch {}
-  }
   try { fcProgressCache = JSON.parse(localStorage.getItem(FC_PROGRESS_KEY) || '{}'); } catch { fcProgressCache = {}; }
 }
 
@@ -1207,17 +1089,11 @@ function loadCardProgress() {
   return fcProgressCache || {};
 }
 
-async function saveCardProgress(word, status) {
+function saveCardProgress(word, status) {
   const p = loadCardProgress();
   p[word] = status;
   fcProgressCache = p;
   localStorage.setItem(FC_PROGRESS_KEY, JSON.stringify(p));
-  if (USER.mode === 'account') {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) await sb.from('profiles').upsert({ id: session.user.id, flashcard_progress: p });
-    } catch {}
-  }
 }
 
 function getCardProgressCounts() {
@@ -1300,16 +1176,10 @@ async function markCard(status) {
 
 function shuffleCards() { cardState.cards.sort(() => Math.random() - 0.5); cardState.current = 0; renderCard(); showToast('Cards shuffled!', 'info', 1500); }
 
-async function resetCardProgress() {
+function resetCardProgress() {
   if (!confirm('Reset ALL flashcard progress? Your "Got Right" and "Got Wrong" history will be cleared.')) return;
   fcProgressCache = {};
   localStorage.removeItem(FC_PROGRESS_KEY);
-  if (USER.mode === 'account') {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (session) await sb.from('profiles').upsert({ id: session.user.id, flashcard_progress: {} });
-    } catch {}
-  }
   showToast('Flashcard progress reset!', 'info');
   applyCardFilter();
 }
@@ -2020,14 +1890,6 @@ function resetAllProgress() {
   navigateTo('dashboard');
 }
 
-async function signOut() {
-  await sb.auth.signOut();
-  localStorage.removeItem('sat_nexus_user');
-  localStorage.removeItem('sat_nexus_sessions');
-  USER = null;
-  showOnboarding();
-}
-
 // Clears the access-code cookie and returns to the lock screen.
 async function lockSite() {
   try { await fetch('/api/logout', { method: 'POST' }); } catch {}
@@ -2036,7 +1898,6 @@ async function lockSite() {
 
 /* ── Init ────────────────────────────────────────────────────── */
 function initApp() {
-  Progress.pull().then(n => { if (n) showToast(`Synced ${n} answers from your account.`, 'info'); });
   updateSidebarUser();
   initDashboard();
   renderCard();
@@ -2051,33 +1912,19 @@ function initApp() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // Check for an active Supabase session first (returning logged-in user)
-  const { data: { session } } = await sb.auth.getSession();
-
-  if (session) {
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    saveUser({
-      mode: 'account',
-      name:              profile?.name              ?? session.user.user_metadata?.name ?? 'Student',
-      currentScore:      profile?.current_score     ?? null,
-      targetScore:       profile?.target_score      ?? null,
-      testDate:          profile?.test_date         ?? null,
-      streak:            profile?.streak            ?? 0,
-      studyTime:         profile?.study_time        ?? 0,
-      questionsAnswered: profile?.questions_answered ?? 0,
-      accuracy:          profile?.accuracy          ?? null,
-      testsCompleted:    profile?.tests_completed   ?? 0,
-      topicMastery:      profile?.topic_mastery     ?? {}
-    });
-    initApp();
-    showToast(`Welcome back, ${USER.name}!`, 'info', 3000);
-  } else {
-    // Fall back to local user (guest) or show onboarding
-    USER = loadUser();
-    if (USER) {
-      initApp();
-    } else {
-      showOnboarding();
-    }
-  }
+  Store.onStatus(renderSaveStatus);
+  await Store.ready(6000);          // pull everything saved on the server before the app reads it
+  Progress.reload();
+  USER = loadUser();
+  if (USER) initApp(); else showOnboarding();
 });
+
+// "Saved" indicator in the top bar
+function renderSaveStatus(st) {
+  const el = document.getElementById('saveStatus'); if (!el) return;
+  const map = { idle: ['', ''], saving: ['⟳ Saving…', 'var(--text-muted)'], saved: ['☁ Saved', 'var(--emerald)'],
+                offline: ['⚠ Offline — will sync', 'var(--amber)'] };
+  const [text, color] = map[st.state] || ['', ''];
+  el.textContent = text; el.style.color = color;
+  el.title = st.state === 'offline' ? 'Your work is safe on this device and will upload automatically when the connection is back.' : 'Everything is saved automatically.';
+}

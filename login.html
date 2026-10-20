@@ -70,7 +70,7 @@
     // Only same-site relative paths are allowed as a post-login destination.
     function safeNext() {
       const n = new URLSearchParams(location.search).get('next') || '';
-      return n.startsWith('/') && !n.startsWith('//') && !n.startsWith('/\\') ? n : '/index.html';
+      return n.startsWith('/') && !n.startsWith('//') && !n.startsWith('/\\') ? n : '/app.html';
     }
 
     form.addEventListener('submit', async (e) => {

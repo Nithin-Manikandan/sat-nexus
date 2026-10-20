@@ -242,18 +242,10 @@ function importProgress(input) {
   };
   r.readAsText(f);
 }
-async function retryCloudSync() {
-  await Progress.retrySync();
-  showToast('Sync attempted — see status below.', 'info');
-  updateProgressStatus();
-}
-async function updateProgressStatus() {
+function updateProgressStatus() {
   const el = document.getElementById('progressStatus'); if (!el) return;
-  let signedIn = false;
-  try { signedIn = !!(await sb.auth.getSession()).data.session; } catch {}
-  const off = (() => { try { return localStorage.getItem('sat_nexus_sync_disabled') === '1'; } catch { return false; } })();
-  el.textContent = `${Progress.all().length.toLocaleString()} answers saved on this device. ` + (!signedIn
-    ? 'Sign in to sync them across devices.'
-    : off ? 'Cloud sync is off — your Supabase profile needs an "attempts" column (see setup notes), then press Retry.'
-          : 'Cloud sync is on.');
+  const st = Store.status().state;
+  el.textContent = `${Progress.all().length.toLocaleString()} answers logged. ` + (st === 'offline'
+    ? 'Offline right now — everything is safe on this device and uploads automatically when you reconnect.'
+    : 'Everything you do saves automatically, so it is all here when you come back from any device.');
 }

@@ -1,14 +1,12 @@
 /* ============================================================
    SAT NEXUS — Progress engine
-   Attempt log (saved locally + synced to Supabase when signed in), ability / score model,
+   Attempt log (saved locally; js/store.js mirrors it to the server), ability / score model,
    "Error DNA" miss classifier, and the points-per-hour study planner.
    Pure logic only: no DOM, so it can be tested in Node.
    ============================================================ */
 const Progress = (() => {
   const KEY = 'sat_nexus_attempts_v1';
   const MAX_ATTEMPTS = 25000;       // local cap
-  const MAX_SYNCED = 6000;          // most recent attempts pushed to the cloud
-  const SYNC_FLAG = 'sat_nexus_sync_disabled';
 
   /* ── model constants ───────────────────────────────────────── */
   // Rasch (1-parameter logistic) item difficulty offsets, in logits, by labelled difficulty.
@@ -28,7 +26,6 @@ const Progress = (() => {
   let attempts = [];
   let qIndex = null, skillList = null;
   let shown = { key: null, at: 0 };
-  let syncTimer = null;
 
   /* ── question index ────────────────────────────────────────── */
   function index() {
@@ -66,7 +63,6 @@ const Progress = (() => {
   function persist() {
     try { localStorage.setItem(KEY, JSON.stringify(attempts)); }
     catch { attempts = attempts.slice(-MAX_ATTEMPTS / 2); try { localStorage.setItem(KEY, JSON.stringify(attempts)); } catch {} }
-    scheduleSync();
   }
 
   function markShown(key) {            // call whenever a question is put on screen
@@ -83,7 +79,8 @@ const Progress = (() => {
     persist();
   }
 
-  /* ── cloud sync (Supabase profiles.attempts jsonb; best effort) ─ */
+  /* ── export / merge ─────────────────────────────────────────── */
+  // (saving to the server is handled for every key by js/store.js)
   const pack = a => [a.q, a.t, a.c, a.ms, a.m === 'test' ? 1 : 0, a.a, a.h || 0];
   const unpack = r => ({ q: r[0], t: r[1], c: r[2], ms: r[3], m: r[4] ? 'test' : 'practice', a: r[5], ...(r[6] ? { h: r[6] } : {}) });
 
@@ -94,38 +91,6 @@ const Progress = (() => {
     if (added) { attempts.sort((x, y) => x.t - y.t); if (attempts.length > MAX_ATTEMPTS) attempts = attempts.slice(-MAX_ATTEMPTS); }
     return added;
   }
-
-  async function session() {
-    try { return (await sb.auth.getSession()).data.session; } catch { return null; }
-  }
-  function syncDisabled() { try { return localStorage.getItem(SYNC_FLAG) === '1'; } catch { return false; } }
-
-  async function pull() {
-    if (syncDisabled()) return 0;
-    const s = await session(); if (!s) return 0;
-    try {
-      const { data, error } = await sb.from('profiles').select('attempts').eq('id', s.user.id).single();
-      if (error) throw error;
-      const added = merge((data?.attempts || []).map(unpack));
-      if (added) { try { localStorage.setItem(KEY, JSON.stringify(attempts)); } catch {} }
-      return added;
-    } catch (e) { markSyncUnavailable(e); return 0; }
-  }
-  async function push() {
-    if (syncDisabled()) return;
-    const s = await session(); if (!s) return;
-    try {
-      const { error } = await sb.from('profiles').upsert({ id: s.user.id, attempts: attempts.slice(-MAX_SYNCED).map(pack) });
-      if (error) throw error;
-    } catch (e) { markSyncUnavailable(e); }
-  }
-  function markSyncUnavailable(e) {
-    // most likely the `attempts` column doesn't exist yet — keep working locally and stop retrying
-    console.warn('[Progress] cloud sync unavailable, saving locally only:', e?.message || e);
-    try { localStorage.setItem(SYNC_FLAG, '1'); } catch {}
-  }
-  function scheduleSync() { clearTimeout(syncTimer); syncTimer = setTimeout(push, 4000); }
-  const retrySync = () => { try { localStorage.removeItem(SYNC_FLAG); } catch {} return pull().then(push); };
 
   /* ── ability model (Bayesian 1PL, Newton–Raphson) ──────────── */
   const sigmoid = x => 1 / (1 + Math.exp(-x));
@@ -368,12 +333,13 @@ const Progress = (() => {
     persist();
     return added;
   }
-  function clear() { attempts = []; try { localStorage.removeItem(KEY); } catch {} scheduleSync(); }
+  function clear() { attempts = []; try { localStorage.removeItem(KEY); } catch {} }
   function _setAttempts(list) { attempts = list; }   // test hook
 
   try { load(); } catch { attempts = []; }
+  const reload = () => { try { load(); } catch { attempts = []; } };   // after the server copy has been pulled in
 
   return { record, markShown, elapsed, all, skills, skillStats, predict, dna, plan, smartPick, pickForSkill, openMistakes,
-           profileSummary, diffFor, questionById, pull, push, retrySync, exportJSON, importJSON, clear,
+           profileSummary, diffFor, questionById, reload, exportJSON, importJSON, clear,
            CAUSES, TRAPS, _setAttempts, toScore, ability };
 })();
