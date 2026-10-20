@@ -865,6 +865,7 @@ input, select, textarea { font-family: inherit; }
   border-left: 3px solid var(--indigo);
   margin-bottom: 20px;
   font-style: italic;
+  white-space: pre-line; /* keep paragraph breaks (Text 1 / Text 2, notes) */
 }
 
 .answer-choices { display: flex; flex-direction: column; gap: 10px; }
