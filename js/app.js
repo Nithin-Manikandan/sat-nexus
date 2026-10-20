@@ -155,6 +155,8 @@ const PAGE_TITLES = {
   resources:   'Resource Hub',
   videos:      'Video Library',
   analytics:   'Analytics',
+  insights:    'Insights',
+  plan:        'Game Plan',
   roadmap:     'Study Roadmap',
   formulas:    'Formula Sheet',
   leaderboard: 'Leaderboard',
@@ -179,7 +181,10 @@ function navigateTo(page) {
   if (page === 'roadmap')     initRoadmapDefaults();
   if (page === 'flashcards')  initFlashcardProgress().then(() => { applyCardFilter(); });
   if (page === 'fulltest')    initFullTestPage();
-  if (page === 'practice')    renderDomainChips();
+  if (page === 'practice')    { renderDomainChips(); renderSmartStart(); }
+  if (page === 'insights')    renderInsights();
+  if (page === 'plan')        renderPlan();
+  if (page === 'settings')    updateProgressStatus();
 }
 
 document.querySelectorAll('.nav-item').forEach(item => {
@@ -538,10 +543,9 @@ function saveSession(session) {
         USER.topicMastery[topic] = prev !== undefined ? Math.round((prev + newPct) / 2) : newPct;
       });
     }
-    // Estimate score from accuracy
-    if (USER.accuracy !== null && USER.questionsAnswered >= 5) {
-      USER.currentScore = Math.round(400 + (USER.accuracy / 100) * 1200);
-    }
+    // Estimated score from the ability model (js/progress.js) once each section has enough answers
+    const est = Progress.predict();
+    if (est.total.ready) USER.currentScore = est.total.score;
     saveUser(USER);
     updateSidebarUser();
   }
@@ -853,6 +857,12 @@ function isCorrect(q, given) {
   return given === q.answer;
 }
 
+// Record a finished answer in the progress log (self-graded items only count once the student marks them).
+function logAttempt(q, given, mode) {
+  if (q.selfGraded && given !== 'right' && given !== 'wrong') return;
+  Progress.record({ q, given, correct: isCorrect(q, given), mode, hints: Tutor.hintsUsed(q.id) });
+}
+
 const answerLabel = q => q.selfGraded ? 'see rationale' : q.kind === 'spr' ? q.answer.join(' or ') : q.answer;
 const givenLabel  = (q, g) => !g || g === 'shown' ? 'Skipped' : q.selfGraded ? (g === 'right' ? 'Marked correct' : 'Marked incorrect') : escHtml(g);
 const stemHTML    = q => q.img ? mathImg(q.img, 'math-stem') : escHtml(q.text);
@@ -938,21 +948,27 @@ function startPractice(section, topic, numQuestions, diffOverride) {
   if (pool.length === 0) pool = SAT_QUESTIONS;
 
   const shuffled = [...pool].sort(() => Math.random() - 0.5);
-  practiceState.questions = shuffled.slice(0, Math.min(numQuestions, shuffled.length));
+  const sLabel = section === 'math' ? 'Math' : section === 'reading_writing' ? 'R&W' : 'Mixed';
+  const dLabel = diff === 'all' ? '' : ` · ${diff.charAt(0).toUpperCase()+diff.slice(1)}`;
+  beginPractice(shuffled.slice(0, Math.min(numQuestions, shuffled.length)), `${sLabel}${dLabel} · ${topic !== 'all' ? topic : 'All Topics'}`);
+}
+
+// Starts a session from an explicit list of questions (smart picks, skill drills, mistake retries…).
+function beginPractice(questions, label) {
+  if (!questions.length) { showToast('No questions available for that yet.', 'info'); return; }
+  practiceState.questions = questions;
   practiceState.current = 0;
   practiceState.answers = {};
   practiceState.flags = {};
   practiceState.revealed = {};
   practiceState.startTime = Date.now();
-
-  const sLabel = section === 'math' ? 'Math' : section === 'reading_writing' ? 'R&W' : 'Mixed';
-  const dLabel = diff === 'all' ? '' : ` · ${diff.charAt(0).toUpperCase()+diff.slice(1)}`;
-  document.getElementById('practiceModeName').textContent = `${sLabel}${dLabel} · ${topic !== 'all' ? topic : 'All Topics'}`;
+  document.getElementById('practiceModeName').textContent = label;
 
   const totalMins = Math.ceil(practiceState.questions.length * 1.5);
   practiceState.timeLeft = totalMins * 60;
   startTimer();
 
+  navigateTo('practice');
   document.getElementById('practiceHome').classList.add('hidden');
   document.getElementById('practiceResults').classList.add('hidden');
   document.getElementById('practiceActive').classList.remove('hidden');
@@ -977,6 +993,7 @@ function renderQuestion() {
     <span class="question-number">Q ${idx+1} / ${total}</span>
   `;
 
+  Progress.markShown('p:' + q.id);
   setQuestionBody(document.getElementById('questionPassage'), document.getElementById('questionText'), q);
 
   const revealed  = practiceState.revealed[idx];
@@ -991,6 +1008,7 @@ function renderQuestion() {
   } else {
     expCard.classList.add('hidden');
   }
+  Tutor.mount(q, selected, revealed, isCorrect(q, selected));
 
   document.getElementById('prevBtn').disabled = idx === 0;
   document.getElementById('nextBtn').textContent = idx === total - 1 ? 'Finish ✓' : 'Next →';
@@ -1005,6 +1023,7 @@ function selectAnswer(letter) {
   if (practiceState.revealed[idx] && !(q.selfGraded && practiceState.answers[idx] === 'shown')) return;
   practiceState.answers[idx] = letter;
   practiceState.revealed[idx] = true;
+  logAttempt(q, letter, 'practice');
   renderQuestion();
   updateNavGrid();
   updateSessionProgress();
@@ -1574,6 +1593,7 @@ function ftRenderQuestion() {
     <span class="difficulty-${q.difficulty}">${q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</span>
   `;
 
+  Progress.markShown('t:' + q.id);
   setQuestionBody(document.getElementById('ftPassage'), document.getElementById('ftQuestionText'), q);
 
   const revealed = ftState.revealed[ftState.moduleIdx][idx];
@@ -1609,6 +1629,7 @@ function ftSelectAnswer(letter) {
   if (ftState.revealed[mIdx][qIdx] && !(q.selfGraded && ftState.answers[mIdx][qIdx] === 'shown')) return;
   ftState.answers[mIdx][qIdx] = letter;
   ftState.revealed[mIdx][qIdx] = true;
+  logAttempt(q, letter, 'test');
   ftRenderQuestion();
 }
 
@@ -1983,6 +2004,7 @@ document.addEventListener('keydown', e => {
 function resetAllProgress() {
   if (!confirm('This will clear all your practice history and scores. Are you sure?')) return;
   localStorage.removeItem('sat_nexus_sessions');
+  Progress.clear();
   if (USER) {
     USER.questionsAnswered = 0;
     USER.testsCompleted = 0;
@@ -2014,6 +2036,7 @@ async function lockSite() {
 
 /* ── Init ────────────────────────────────────────────────────── */
 function initApp() {
+  Progress.pull().then(n => { if (n) showToast(`Synced ${n} answers from your account.`, 'info'); });
   updateSidebarUser();
   initDashboard();
   renderCard();

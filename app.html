@@ -7,6 +7,9 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
   <link rel="stylesheet" href="css/styles.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" />
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
 </head>
 <body>
 
@@ -53,6 +56,18 @@
           <path d="M1 13L5 9L8 11L12 6L17 10"/><path d="M1 17H17"/>
         </svg>
         Analytics
+      </div>
+      <div class="nav-item" data-page="insights">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="9" cy="9" r="7"/><path d="M9 5v4l3 2"/>
+        </svg>
+        Insights
+      </div>
+      <div class="nav-item" data-page="plan">
+        <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M2 15L7 9l3 3 6-8"/><path d="M12 4h4v4"/>
+        </svg>
+        Game Plan
       </div>
       <div class="nav-item" data-page="roadmap">
         <svg class="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -321,12 +336,30 @@
       <!-- ═══════════════════════════════════════════════════════
            PRACTICE
            ═══════════════════════════════════════════════════════ -->
+      <section class="page-section" id="page-insights">
+        <div class="page-header">
+          <h1>Insights</h1>
+          <p>Your score estimate, why you really miss questions, and where the points are hiding.</p>
+        </div>
+        <div id="insightsBody"></div>
+      </section>
+
+      <section class="page-section" id="page-plan">
+        <div class="page-header">
+          <h1>Game Plan</h1>
+          <p>Your study hours, spent on whatever buys the most points per hour.</p>
+        </div>
+        <div id="planBody"></div>
+      </section>
+
       <section class="page-section" id="page-practice">
         <div id="practiceHome">
           <div class="page-header">
             <h1>Practice Questions</h1>
             <p>1,600+ official SAT questions across every topic. Instantly scored with full explanations.</p>
           </div>
+
+          <div id="smartStart"></div>
 
           <!-- Filter-based Setup UI -->
           <div class="chart-card" style="margin-bottom:24px;background:linear-gradient(135deg,rgba(129,140,248,0.08),rgba(34,211,238,0.05));border-color:var(--border-brand)">
@@ -420,6 +453,15 @@
               <div class="explanation-card hidden" id="explanationCard">
                 <h4>✓ Explanation</h4>
                 <p id="explanationText"></p>
+              </div>
+              <div class="tutor-panel" id="tutorPanel">
+                <div class="tutor-head"><span class="tutor-badge">🧠 AI Tutor</span><span class="tutor-sub">grounded in the official explanation</span></div>
+                <div class="tutor-actions" id="tutorActions"></div>
+                <div class="tutor-out" id="tutorOut"></div>
+                <form class="tutor-chat hidden" id="tutorChat" onsubmit="Tutor.send(event)">
+                  <input id="tutorInput" type="text" autocomplete="off" maxlength="500" placeholder="Ask a follow-up about this question…" />
+                  <button class="btn btn-primary btn-sm" type="submit">Ask</button>
+                </form>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px">
                 <button class="btn btn-ghost btn-sm" onclick="prevQuestion()" id="prevBtn">← Previous</button>
@@ -1085,6 +1127,21 @@
             <div class="toggle-switch" onclick="this.classList.toggle('on')"></div>
           </div>
         </div>
+        <div class="settings-section">
+          <h3>Progress &amp; Backup</h3>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <h4>Answer history</h4>
+              <p id="progressStatus">Every answer you give is saved on this device, and synced to your account when you're signed in.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-ghost btn-sm" onclick="exportProgress()">Export</button>
+              <button class="btn btn-ghost btn-sm" onclick="document.getElementById('importProgressFile').click()">Import</button>
+              <button class="btn btn-ghost btn-sm" onclick="retryCloudSync()">Retry cloud sync</button>
+              <input type="file" id="importProgressFile" accept="application/json" class="hidden" onchange="importProgress(this)" />
+            </div>
+          </div>
+        </div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           <button class="btn btn-primary" onclick="showToast('Settings saved!','success')">Save Settings</button>
           <button class="btn btn-ghost" style="color:var(--rose);border-color:rgba(251,113,133,0.3)" onclick="resetAllProgress()">Reset All Progress</button>
@@ -1206,6 +1263,9 @@
 <script src="js/content.js"></script>
 <script src="js/ela.js"></script>
 <script src="js/math.js"></script>
+<script src="js/progress.js"></script>
 <script src="js/app.js"></script>
+<script src="js/tutor.js"></script>
+<script src="js/insights.js"></script>
 </body>
 </html>
