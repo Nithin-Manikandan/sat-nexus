@@ -819,6 +819,7 @@ function surprisePractice() {
 }
 
 function startPractice(section, topic, numQuestions, diffOverride) {
+  if (!SAT_QUESTIONS.length) { showToast('The question bank is being updated — check back soon.', 'info'); return; }
   const diff = diffOverride || 'all';
   practiceState.section = section;
   practiceState.topic = topic;
@@ -1379,6 +1380,7 @@ function renderFTHistory() {
 }
 
 function startFullTest(testNum) {
+  if (!SAT_QUESTIONS.length) { showToast('The question bank is being updated — check back soon.', 'info'); return; }
   // Build question bank for each module — use a deterministic seed based on testNum
   const allRW   = SAT_QUESTIONS.filter(q => q.section === 'reading_writing');
   const allMath = SAT_QUESTIONS.filter(q => q.section === 'math');
