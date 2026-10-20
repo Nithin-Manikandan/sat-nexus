@@ -1933,6 +1933,12 @@ async function signOut() {
   showOnboarding();
 }
 
+// Clears the access-code cookie and returns to the lock screen.
+async function lockSite() {
+  try { await fetch('/api/logout', { method: 'POST' }); } catch {}
+  location.replace('/login.html');
+}
+
 /* ── Init ────────────────────────────────────────────────────── */
 function initApp() {
   updateSidebarUser();
