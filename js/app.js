@@ -818,6 +818,101 @@ function surprisePractice() {
   showToast(`Surprise: ${randSubject === 'all' ? 'Both' : randSubject === 'math' ? 'Math' : 'ELA'} · ${randCount}Q · ${randDiff === 'all' ? 'Any difficulty' : randDiff}`, 'info');
 }
 
+/* ── Image-based Math questions ──────────────────────────────────
+   Math items come from the College Board PDF as cropped images (img/math/…) because their equations and
+   graphs are drawings, not text. Images are rendered at 144 dpi, so one image px is 2/3 of a CSS px. */
+const MATH_IMG_DIR = 'img/math/';
+
+function mathImg(spec, cls = '') {
+  const [file, w, h] = spec;
+  return `<img class="math-img ${cls}" src="${MATH_IMG_DIR}${file}" width="${Math.round(w * 2 / 3)}" height="${Math.round(h * 2 / 3)}" loading="lazy" decoding="async" alt="Math question figure">`;
+}
+
+function escHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// Student-produced responses: "3/4", ".75" and "0.75" are the same answer.
+function sameNumber(a, b) {
+  const num = v => {
+    v = String(v).replace(/\s+/g, '').replace(/^\+/, '');
+    const f = v.match(/^(-?\d*\.?\d+)\/(-?\d*\.?\d+)$/);
+    if (f && parseFloat(f[2]) !== 0) return parseFloat(f[1]) / parseFloat(f[2]);
+    return /^-?\d*\.?\d+$/.test(v) ? parseFloat(v) : v.toLowerCase();
+  };
+  const x = num(a), y = num(b);
+  return typeof x === 'number' && typeof y === 'number' ? Math.abs(x - y) < 1e-9 : x === y;
+}
+
+// Single place that decides right/wrong for every question type.
+// selfGraded: the answer exists only inside the rationale image, so the student marks themselves.
+function isCorrect(q, given) {
+  if (!given) return false;
+  if (q.selfGraded) return given === 'right';
+  if (q.kind === 'spr') return q.answer.some(a => sameNumber(a, given));
+  return given === q.answer;
+}
+
+const answerLabel = q => q.selfGraded ? 'see rationale' : q.kind === 'spr' ? q.answer.join(' or ') : q.answer;
+const givenLabel  = (q, g) => !g || g === 'shown' ? 'Skipped' : q.selfGraded ? (g === 'right' ? 'Marked correct' : 'Marked incorrect') : escHtml(g);
+const stemHTML    = q => q.img ? mathImg(q.img, 'math-stem') : escHtml(q.text);
+const explHTML    = q => q.rationaleImg ? mathImg(q.rationaleImg, 'math-rationale') : escHtml(q.explanation || '');
+
+function choiceClass(letter, q, given, revealed) {
+  if (revealed) {
+    if (letter === q.answer) return ' correct';
+    if (letter === given) return ' incorrect';
+  } else if (letter === given) return ' selected';
+  return '';
+}
+
+// Answer area for any question. `pick` is the global handler name; `inputId` the free-response input id.
+function choicesHTML(q, given, revealed, pick, inputId) {
+  if (q.kind === 'spr') {
+    if (q.selfGraded) {
+      if (!given) return `<button class="btn btn-primary" onclick="${pick}('shown')">Show answer</button><div class="spr-hint">Work it out, then reveal the rationale and mark yourself.</div>`;
+      if (given === 'shown') return `<div class="spr-grade"><span>Did you get it right?</span><button class="btn btn-primary" onclick="${pick}('right')">✓ Yes</button><button class="btn btn-ghost" onclick="${pick}('wrong')">✗ No</button></div>`;
+      return `<div class="spr-result ${given === 'right' ? 'correct' : 'incorrect'}">${givenLabel(q, given)}</div>`;
+    }
+    const state = !revealed ? '' : isCorrect(q, given) ? ' correct' : ' incorrect';
+    return `<div class="spr-row">
+        <input id="${inputId}" class="spr-input${state}" type="text" inputmode="text" autocomplete="off" spellcheck="false" placeholder="Type your answer"
+               value="${revealed ? escHtml(given) : ''}" ${revealed ? 'disabled' : ''} onkeydown="if(event.key==='Enter')${pick}(this.value.trim())">
+        ${revealed ? '' : `<button class="btn btn-primary" onclick="${pick}(document.getElementById('${inputId}').value.trim())">Check</button>`}
+      </div>
+      ${revealed && !isCorrect(q, given) ? `<div class="spr-hint">Correct answer: <strong>${escHtml(answerLabel(q))}</strong></div>` : ''}
+      <div class="spr-hint">Fractions (3/4) and decimals (.75) are both accepted.</div>`;
+  }
+  if (q.choicesImg) {  // choices that couldn't be split per option (e.g. a grid of graphs): image + plain A–D buttons
+    return `<div class="math-choices-block">${mathImg(q.choicesImg)}</div>
+      <div class="choice-letter-row">${['A', 'B', 'C', 'D'].map(l =>
+        `<div class="answer-choice${choiceClass(l, q, given, revealed)}" onclick="${pick}('${l}')"><div class="choice-letter">${l}</div></div>`).join('')}</div>`;
+  }
+  return (q.choiceImgs || q.choices).map((c, i) => {
+    const l = ['A', 'B', 'C', 'D'][i];
+    return `<div class="answer-choice${choiceClass(l, q, given, revealed)}" onclick="${pick}('${l}')">
+        <div class="choice-letter">${l}</div>
+        <div class="choice-text">${q.choiceImgs ? mathImg(c, 'math-choice') : c.substring(3)}</div>
+      </div>`;
+  }).join('');
+}
+
+function setQuestionBody(passageEl, textEl, q) {
+  if (q.img) {
+    passageEl.style.display = 'none';
+    textEl.innerHTML = mathImg(q.img, 'math-stem');
+    return;
+  }
+  if (q.passage) { passageEl.textContent = q.passage; passageEl.style.display = 'block'; }
+  else passageEl.style.display = 'none';
+  textEl.textContent = q.text;
+}
+
+function setExplanation(el, q) {
+  if (q.rationaleImg) el.innerHTML = mathImg(q.rationaleImg, 'math-rationale');
+  else el.textContent = q.explanation || '';
+}
+
 function startPractice(section, topic, numQuestions, diffOverride) {
   if (!SAT_QUESTIONS.length) { showToast('The question bank is being updated — check back soon.', 'info'); return; }
   const diff = diffOverride || 'all';
@@ -882,33 +977,17 @@ function renderQuestion() {
     <span class="question-number">Q ${idx+1} / ${total}</span>
   `;
 
-  const passageEl = document.getElementById('questionPassage');
-  if (q.passage) { passageEl.textContent = q.passage; passageEl.style.display = 'block'; }
-  else passageEl.style.display = 'none';
-
-  document.getElementById('questionText').textContent = q.text;
+  setQuestionBody(document.getElementById('questionPassage'), document.getElementById('questionText'), q);
 
   const revealed  = practiceState.revealed[idx];
   const selected  = practiceState.answers[idx];
 
-  document.getElementById('answerChoices').innerHTML = q.choices.map((choice, i) => {
-    const letter = ['A','B','C','D'][i];
-    let cls = 'answer-choice';
-    if (revealed) {
-      if (letter === q.answer) cls += ' correct';
-      else if (letter === selected) cls += ' incorrect';
-    } else if (letter === selected) cls += ' selected';
-    return `
-      <div class="${cls}" onclick="selectAnswer('${letter}')">
-        <div class="choice-letter">${letter}</div>
-        <div class="choice-text">${choice.substring(3)}</div>
-      </div>`;
-  }).join('');
+  document.getElementById('answerChoices').innerHTML = choicesHTML(q, selected, revealed, 'selectAnswer', 'sprInput');
 
   const expCard = document.getElementById('explanationCard');
   if (revealed) {
     expCard.classList.remove('hidden');
-    document.getElementById('explanationText').textContent = q.explanation;
+    setExplanation(document.getElementById('explanationText'), q);
   } else {
     expCard.classList.add('hidden');
   }
@@ -920,7 +999,10 @@ function renderQuestion() {
 
 function selectAnswer(letter) {
   const idx = practiceState.current;
-  if (practiceState.revealed[idx]) return;
+  const q = practiceState.questions[idx];
+  if (!letter) return;
+  // a self-graded item stays open after "Show answer" until the student marks it right/wrong
+  if (practiceState.revealed[idx] && !(q.selfGraded && practiceState.answers[idx] === 'shown')) return;
   practiceState.answers[idx] = letter;
   practiceState.revealed[idx] = true;
   renderQuestion();
@@ -989,7 +1071,7 @@ function updateTimerDisplay() {
 function showResults() {
   clearInterval(practiceState.timer);
   const qs = practiceState.questions;
-  const correct = qs.filter((q, i) => practiceState.answers[i] === q.answer).length;
+  const correct = qs.filter((q, i) => isCorrect(q, practiceState.answers[i])).length;
   const total   = qs.length;
   const pct     = Math.round((correct / total) * 100);
   const elapsed = Math.round((Date.now() - practiceState.startTime) / 1000);
@@ -1000,7 +1082,7 @@ function showResults() {
   qs.forEach((q, i) => {
     if (!topicStats[q.topic]) topicStats[q.topic] = { correct: 0, total: 0 };
     topicStats[q.topic].total++;
-    if (practiceState.answers[i] === q.answer) topicStats[q.topic].correct++;
+    if (isCorrect(q, practiceState.answers[i])) topicStats[q.topic].correct++;
   });
 
   // Save session
@@ -1040,7 +1122,7 @@ function reviewResults() {
   reviewEl.innerHTML = `<h3 style="margin-bottom:16px;font-size:1rem">Full Question Review</h3>` +
     practiceState.questions.map((q, i) => {
       const userAns = practiceState.answers[i];
-      const correct = userAns === q.answer;
+      const correct = isCorrect(q, userAns);
       return `
         <div style="background:${correct?'rgba(16,185,129,0.06)':'rgba(251,113,133,0.06)'};border:1px solid ${correct?'rgba(16,185,129,0.2)':'rgba(251,113,133,0.2)'};border-radius:12px;padding:16px;margin-bottom:12px">
           <div style="display:flex;gap:8px;margin-bottom:8px;align-items:center">
@@ -1049,13 +1131,13 @@ function reviewResults() {
             <span class="difficulty-${q.difficulty}">${q.difficulty}</span>
           </div>
           ${q.passage ? `<div style="font-size:.78rem;color:var(--text-muted);border-left:2px solid var(--border);padding-left:8px;margin-bottom:8px;line-height:1.5">${q.passage.slice(0,200)}${q.passage.length>200?'…':''}</div>` : ''}
-          <p style="font-size:.875rem;margin-bottom:10px">${q.text}</p>
+          <p style="font-size:.875rem;margin-bottom:10px">${stemHTML(q)}</p>
           <div style="font-size:.8rem;margin-bottom:8px">
             <span style="color:var(--text-muted)">Your answer: </span>
-            <strong style="color:${correct?'#10b981':'#fb7185'}">${userAns || 'Skipped'}</strong>
-            ${!correct ? `&nbsp;&nbsp;<span style="color:var(--text-muted)">Correct: </span><strong style="color:#10b981">${q.answer}</strong>` : ''}
+            <strong style="color:${correct?'#10b981':'#fb7185'}">${givenLabel(q, userAns)}</strong>
+            ${!correct ? `&nbsp;&nbsp;<span style="color:var(--text-muted)">Correct: </span><strong style="color:#10b981">${escHtml(answerLabel(q))}</strong>` : ''}
           </div>
-          <div style="font-size:.8rem;color:var(--text-secondary);padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:3px solid ${correct?'#10b981':'#818cf8'}">${q.explanation}</div>
+          <div style="font-size:.8rem;color:var(--text-secondary);padding:8px 12px;background:rgba(255,255,255,0.03);border-radius:8px;border-left:3px solid ${correct?'#10b981':'#818cf8'}">${explHTML(q)}</div>
         </div>`;
     }).join('');
 }
@@ -1383,7 +1465,7 @@ function startFullTest(testNum) {
   if (!SAT_QUESTIONS.length) { showToast('The question bank is being updated — check back soon.', 'info'); return; }
   // Build question bank for each module — use a deterministic seed based on testNum
   const allRW   = SAT_QUESTIONS.filter(q => q.section === 'reading_writing');
-  const allMath = SAT_QUESTIONS.filter(q => q.section === 'math');
+  const allMath = SAT_QUESTIONS.filter(q => q.section === 'math' && !q.selfGraded);
 
   const pick = (arr, diff, n, offset) => {
     const pool = diff === 'easy'
@@ -1492,32 +1574,17 @@ function ftRenderQuestion() {
     <span class="difficulty-${q.difficulty}">${q.difficulty.charAt(0).toUpperCase() + q.difficulty.slice(1)}</span>
   `;
 
-  const passageEl = document.getElementById('ftPassage');
-  if (q.passage) { passageEl.textContent = q.passage; passageEl.style.display = 'block'; }
-  else { passageEl.style.display = 'none'; }
-
-  document.getElementById('ftQuestionText').textContent = q.text;
+  setQuestionBody(document.getElementById('ftPassage'), document.getElementById('ftQuestionText'), q);
 
   const revealed = ftState.revealed[ftState.moduleIdx][idx];
   const selected = ftState.answers[ftState.moduleIdx][idx];
 
-  document.getElementById('ftAnswerChoices').innerHTML = q.choices.map((choice, i) => {
-    const letter = ['A','B','C','D'][i];
-    let cls = 'answer-choice';
-    if (revealed) {
-      if (letter === q.answer)  cls += ' correct';
-      else if (letter === selected) cls += ' incorrect';
-    } else if (letter === selected) cls += ' selected';
-    return `<div class="${cls}" onclick="ftSelectAnswer('${letter}')">
-      <div class="choice-letter">${letter}</div>
-      <div class="choice-text">${choice.substring(3)}</div>
-    </div>`;
-  }).join('');
+  document.getElementById('ftAnswerChoices').innerHTML = choicesHTML(q, selected, revealed, 'ftSelectAnswer', 'ftSprInput');
 
   const expCard = document.getElementById('ftExplanationCard');
   if (revealed) {
     expCard.classList.remove('hidden');
-    document.getElementById('ftExplanationText').textContent = q.explanation;
+    setExplanation(document.getElementById('ftExplanationText'), q);
   } else {
     expCard.classList.add('hidden');
   }
@@ -1537,7 +1604,9 @@ function ftSelectAnswer(letter) {
   if (!ftState) return;
   const mIdx = ftState.moduleIdx;
   const qIdx = ftState.questionIdx;
-  if (ftState.revealed[mIdx][qIdx]) return;
+  const q = ftState.modules[mIdx].questions[qIdx];
+  if (!letter) return;
+  if (ftState.revealed[mIdx][qIdx] && !(q.selfGraded && ftState.answers[mIdx][qIdx] === 'shown')) return;
   ftState.answers[mIdx][qIdx] = letter;
   ftState.revealed[mIdx][qIdx] = true;
   ftRenderQuestion();
@@ -1598,7 +1667,7 @@ function ftFinishTest() {
   const modScores = ftState.modules.map((mod, mIdx) => {
     let correct = 0;
     mod.questions.forEach((q, qIdx) => {
-      if (ftState.answers[mIdx][qIdx] === q.answer) correct++;
+      if (isCorrect(q, ftState.answers[mIdx][qIdx])) correct++;
     });
     return { correct, total: mod.questions.length, pct: Math.round(correct / mod.questions.length * 100) };
   });
@@ -1660,7 +1729,7 @@ function ftFinishTest() {
   const wrong = [];
   ftState.modules.forEach((mod, mIdx) => {
     mod.questions.forEach((q, qIdx) => {
-      if (ftState.answers[mIdx][qIdx] !== q.answer) {
+      if (!isCorrect(q, ftState.answers[mIdx][qIdx])) {
         wrong.push({ q, chosen: ftState.answers[mIdx][qIdx], mod: mod.label });
       }
     });
@@ -1670,12 +1739,12 @@ function ftFinishTest() {
   document.getElementById('ftWrongList').innerHTML = wrong.slice(0, 10).map(w => `
     <div style="background:rgba(251,113,133,0.05);border:1px solid rgba(251,113,133,0.15);border-radius:12px;padding:14px">
       <div style="font-size:.72rem;color:var(--text-muted);margin-bottom:6px">${w.mod}</div>
-      <div style="font-size:.88rem;font-weight:500;margin-bottom:10px;line-height:1.5">${w.q.text.slice(0, 120)}${w.q.text.length > 120 ? '…' : ''}</div>
+      <div style="font-size:.88rem;font-weight:500;margin-bottom:10px;line-height:1.5">${w.q.img ? stemHTML(w.q) : escHtml(w.q.text.slice(0, 120)) + (w.q.text.length > 120 ? '…' : '')}</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-        <span style="background:rgba(251,113,133,0.15);color:var(--rose);padding:3px 10px;border-radius:6px;font-size:.78rem">Your answer: ${w.chosen || 'skipped'}</span>
-        <span style="background:rgba(16,185,129,0.15);color:var(--emerald);padding:3px 10px;border-radius:6px;font-size:.78rem">Correct: ${w.q.answer}</span>
+        <span style="background:rgba(251,113,133,0.15);color:var(--rose);padding:3px 10px;border-radius:6px;font-size:.78rem">Your answer: ${givenLabel(w.q, w.chosen).toLowerCase()}</span>
+        <span style="background:rgba(16,185,129,0.15);color:var(--emerald);padding:3px 10px;border-radius:6px;font-size:.78rem">Correct: ${escHtml(answerLabel(w.q))}</span>
       </div>
-      <div style="font-size:.78rem;color:var(--text-muted);line-height:1.5">${w.q.explanation}</div>
+      <div style="font-size:.78rem;color:var(--text-muted);line-height:1.5">${explHTML(w.q)}</div>
     </div>
   `).join('');
 
@@ -1901,11 +1970,13 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeVideoModal(); exitFocus(); }
   const practiceActive = !document.getElementById('practiceActive').classList.contains('hidden');
   if (practiceActive) {
-    if (e.key === 'ArrowRight') nextQuestion();
-    if (e.key === 'ArrowLeft')  prevQuestion();
-    if (['a','b','c','d'].includes(e.key.toLowerCase())) selectAnswer(e.key.toUpperCase());
+    const typing = /^(INPUT|TEXTAREA)$/.test(e.target.tagName);
+    const cur = practiceState.questions[practiceState.current];
+    if (!typing && e.key === 'ArrowRight') nextQuestion();
+    if (!typing && e.key === 'ArrowLeft')  prevQuestion();
+    if (!typing && cur && cur.kind !== 'spr' && ['a','b','c','d'].includes(e.key.toLowerCase())) selectAnswer(e.key.toUpperCase());
   }
-  if (e.key === ' ') { e.preventDefault(); flipCard(); }
+  if (e.key === ' ' && !/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) { e.preventDefault(); flipCard(); }
 });
 
 /* ── Settings ────────────────────────────────────────────────── */

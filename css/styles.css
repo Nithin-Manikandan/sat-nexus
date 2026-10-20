@@ -2053,3 +2053,29 @@ input, select, textarea { font-family: inherit; }
   animation: shimmer 1.5s infinite;
   border-radius: var(--radius-md);
 }
+
+/* ── Image-based math questions ─────────────────────────────────
+   Source images are black-on-white. Inverting + `screen` turns the white page into the card colour
+   and the ink white, so they sit natively on the dark theme. */
+.math-img { display: block; max-width: 100%; height: auto; filter: invert(1); mix-blend-mode: screen; }
+.math-stem { margin: 4px 0 12px; }
+.math-choice { max-height: 140px; width: auto; }
+.math-rationale { margin-top: 4px; }
+.math-choices-block { margin-bottom: 12px; }
+.choice-letter-row { display: flex; gap: 10px; }
+.choice-letter-row .answer-choice { flex: 1; justify-content: center; }
+.spr-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.spr-input {
+  flex: 1; min-width: 180px; max-width: 320px; padding: 14px 16px; border-radius: 12px; font: inherit; font-size: 1.05rem;
+  color: var(--text-primary); background: var(--bg-surface-2); border: 1px solid var(--border); outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+.spr-input:focus { border-color: var(--indigo); box-shadow: 0 0 0 3px rgba(129,140,248,.25); }
+.spr-input.correct { border-color: var(--emerald); background: rgba(16,185,129,.12); }
+.spr-input.incorrect { border-color: var(--rose); background: rgba(251,113,133,.12); }
+.spr-hint { margin-top: 10px; font-size: .8rem; color: var(--text-muted); }
+.spr-hint strong { color: var(--emerald); }
+.spr-grade { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: .9rem; color: var(--text-secondary); }
+.spr-result { padding: 12px 16px; border-radius: 12px; font-size: .9rem; font-weight: 600; }
+.spr-result.correct { background: rgba(16,185,129,.12); color: var(--emerald); }
+.spr-result.incorrect { background: rgba(251,113,133,.12); color: var(--rose); }

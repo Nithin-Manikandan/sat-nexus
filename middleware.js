@@ -15,7 +15,9 @@ export default async function middleware(request) {
   }
 
   if (await verifyToken(getCookie(request, COOKIE))) {
-    return next({ headers: { 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' } });
+    // Question images never change once published, so let the browser keep them; everything else revalidates.
+    const cache = pathname.startsWith('/img/') ? 'private, max-age=86400' : 'private, no-cache';
+    return next({ headers: { 'Cache-Control': cache, 'X-Robots-Tag': 'noindex' } });
   }
 
   if ((request.headers.get('accept') || '').includes('text/html')) {
